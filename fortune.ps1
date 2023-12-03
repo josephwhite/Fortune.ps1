@@ -96,13 +96,16 @@
   .EXAMPLE
   fortune.ps1 -Help
   fortune.ps1 -h
+  .EXAMPLE
+  Verbose messaging is available.
+  fortune.ps1 -Verbose
   .NOTES
   Version
     1.0.0
   Dependencies
     - PSToml
       - Needed to parse TOML files.
-      - Also means PowerShell version must be at least 7.2
+      - Also means PowerShell version must be at least 7.2 to use TOML configuration files.
       - Module GUID: 48071de7-ebee-4cef-abc3-8c6289a555b0
       - https://www.powershellgallery.com/packages/PSToml/0.2.0
 #>
@@ -145,6 +148,7 @@ param(
 )
 
 function Get-FortuneFromFile ($fortuneFile) {
+  Write-Verbose -Message ("Compiling fortunes from {0}" -f $fortuneFile);
   $fortunes_from_file = (Get-Content -Path $fortuneFile -raw) -replace "`r`n", "`n" -split "`n%`n";
   return $fortunes_from_file;
 }
@@ -159,6 +163,7 @@ function Get-FortuneFromFileCollection($tag) {
 }
 
 function Select-FortunesByLength($fortunes) {
+  $fortune_count_before = $fortunes.Count
   if ($Long) {
     $fortunes = $fortunes | Where-Object {
       $_.Length -ge $Long;
@@ -174,7 +179,11 @@ function Select-FortunesByLength($fortunes) {
       $_.Length -eq $Length;
     }
   }
-  return $fortunes
+  $fortune_count_after = $fortunes.Count;
+  $fortune_lengthfilter_vmes = "{0} to {1} fortune(s) after length filter." -f $fortune_count_before, $fortune_count_after;
+  Write-Verbose -Message ($fortune_lengthfilter_vmes);
+
+  return $fortunes;
 }
 
 function Show-Fortune($fortunes) {
@@ -183,19 +192,25 @@ function Show-Fortune($fortunes) {
 
 function Show-PossibleFortuneList($fortunes) {
   foreach ($entry in $fortunes) {
-    Write-Output $entry
-    Write-Output "%"
+    Write-Output $entry;
+    Write-Output "%";
   }
+
+  $fortune_count = $fortunes.Count;
+  $fortune_lengthfilter_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
+  Write-Verbose -Message ($fortune_lengthfilter_vmes);
+
+  return;
 }
 
 if ($Help) {
-  Get-Help $PSCommandPath
-  Write-Output ""
+  Get-Help $PSCommandPath;
+  Write-Output "";
   $h1 = "
   Run the following command for full documentation.
     Get-Help $PSCommandPath -Full
   "
-  Write-Output $h1
+  Write-Output $h1;
   exit 0;
 }
 
