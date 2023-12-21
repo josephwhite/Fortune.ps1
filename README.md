@@ -11,7 +11,7 @@ A PowerShell implementation of the [unix `fortune` program](https://www.wikipedi
 - Length and Pattern parameters. 
 - Comment-based help for `Get-Help` parsing.
 
-Usage of a TOML config file requires [PSTOML](https://github.com/jborean93/PSToml) and PoweShell v7.2+.
+Usage of a TOML config file requires [PSTOML](https://github.com/jborean93/PSToml) and PowerShell v5.1+.
 
 Example of config.toml
 ```toml

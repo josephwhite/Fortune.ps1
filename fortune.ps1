@@ -105,9 +105,9 @@
   Dependencies
     - PSToml
       - Needed to parse TOML files.
-      - Also means PowerShell version must be at least 7.2 to use TOML configuration files.
-      - Module GUID: 48071de7-ebee-4cef-abc3-8c6289a555b0
-      - https://www.powershellgallery.com/packages/PSToml/0.2.0
+      - https://www.powershellgallery.com/packages/PSToml/
+        - 0.3.0 supports PowerShell v5.1+
+        - 0.2.0 supports PowerShell v7.2+ (not recommended)
 #>
 param(
   [Parameter()]
