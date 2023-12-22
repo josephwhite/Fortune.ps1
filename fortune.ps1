@@ -148,14 +148,15 @@ param(
 )
 
 function Get-FortuneFromFile ($fortuneFile) {
-  Write-Verbose -Message ("Compiling fortunes from {0}" -f $fortuneFile);
+  $fortune_vmes = "Compiling fortunes from {0}" -f $fortuneFile;
+  Write-Verbose -Message ($fortune_vmes);
   $fortunes_from_file = (Get-Content -Path $fortuneFile -raw) -replace "`r`n", "`n" -split "`n%`n";
   return $fortunes_from_file;
 }
 
-function Get-FortuneFromFileCollection($tag) {
+function Get-FortuneFromFileCollection($tag, [System.Object]$c) {
   $fortunes_from_files = @();
-  Foreach ($path in $cfg.$tag) {
+  Foreach ($path in $c.$tag) {
     $fortunes_from_files_buffer = Get-FortuneFromFile($path);
     $fortunes_from_files += $fortunes_from_files_buffer;
   }
@@ -163,7 +164,7 @@ function Get-FortuneFromFileCollection($tag) {
 }
 
 function Select-FortunesByLength($fortunes) {
-  $fortune_count_before = $fortunes.Count
+  $fortune_count_before = $fortunes.Count;
   if ($Long) {
     $fortunes = $fortunes | Where-Object {
       $_.Length -ge $Long;
@@ -180,11 +181,26 @@ function Select-FortunesByLength($fortunes) {
     }
   }
   $fortune_count_after = $fortunes.Count;
-  $fortune_lengthfilter_vmes = "{0} to {1} fortune(s) after length filter." -f $fortune_count_before, $fortune_count_after;
-  Write-Verbose -Message ($fortune_lengthfilter_vmes);
+  $fortune_vmes = "{0} to {1} fortune(s) after length filter." -f $fortune_count_before, $fortune_count_after;
+  Write-Verbose -Message ($fortune_vmes);
 
   return $fortunes;
 }
+
+function Select-FortunesByPattern($fortunes) {
+  $fortune_count_before = $fortunes.Count;
+  if ($Match) {
+    $fortunes = $fortunes | Where-Object {
+      $_ -match $Match;
+    }
+  }
+  $fortune_count_after = $fortunes.Count;
+  $fortune_vmes = "{0} to {1} fortune(s) after pattern filter." -f $fortune_count_before, $fortune_count_after;
+  Write-Verbose -Message ($fortune_vmes);
+
+  return $fortunes;
+}
+
 
 function Show-Fortune($fortunes) {
   $fortunes | Get-Random;
@@ -197,8 +213,8 @@ function Show-PossibleFortuneList($fortunes) {
   }
 
   $fortune_count = $fortunes.Count;
-  $fortune_lengthfilter_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
-  Write-Verbose -Message ($fortune_lengthfilter_vmes);
+  $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
+  Write-Verbose -Message ($fortune_vmes);
 
   return;
 }
@@ -235,7 +251,7 @@ if ($File) {
   $f = Get-FortuneFromFile($File);
   $f = Select-FortunesByLength($f);
   if ($Match) {
-    $f = $f | Where-Object {$_ -match $Match};
+    $f = Select-FortunesByPattern($f);
     Show-PossibleFortuneList($f);
   } else {
     Show-Fortune($f);
@@ -253,7 +269,7 @@ if ($Group) {
   $config_file_ext = ((Get-Item $Config).Extension).ToUpper()
   switch($config_file_ext) {
     ".TOML" {
-      $cfg = Get-Content $Config | ConvertFrom-Toml;
+      $cfg = Get-Content -Path $Config | ConvertFrom-Toml;
     }
     ".JSON" {
       $cfg = Get-Content -Raw -Path $Config | ConvertFrom-Json;
@@ -266,10 +282,10 @@ if ($Group) {
       exit 1;
     }
   }
-  $f = Get-FortuneFromFileCollection($Group);
+  $f = Get-FortuneFromFileCollection $Group $cfg;
   $f = Select-FortunesByLength($f);
   if ($Match) {
-    $f = $f | Where-Object {$_ -match $Match};
+    $f = Select-FortunesByPattern($f);
     Show-PossibleFortuneList($f);
   } else {
     Show-Fortune($f);
