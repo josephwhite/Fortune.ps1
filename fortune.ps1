@@ -151,6 +151,7 @@ function Get-FortuneFromFile ($fortuneFile) {
   $fortune_vmes = "Compiling fortunes from {0}" -f $fortuneFile;
   Write-Verbose -Message ($fortune_vmes);
   $fortunes_from_file = (Get-Content -Path $fortuneFile -raw) -replace "`r`n", "`n" -split "`n%`n";
+
   return $fortunes_from_file;
 }
 
@@ -160,6 +161,7 @@ function Get-FortuneFromFileCollection($tag, [System.Object]$c) {
     $fortunes_from_files_buffer = Get-FortuneFromFile($path);
     $fortunes_from_files += $fortunes_from_files_buffer;
   }
+
   return $fortunes_from_files;
 }
 
@@ -203,7 +205,10 @@ function Select-FortunesByPattern($fortunes) {
 
 
 function Show-Fortune($fortunes) {
-  $fortunes | Get-Random;
+  $final_fortune = $fortunes | Get-Random;
+  Write-Output $final_fortune;
+
+  return;
 }
 
 function Show-PossibleFortuneList($fortunes) {
@@ -211,7 +216,6 @@ function Show-PossibleFortuneList($fortunes) {
     Write-Output $entry;
     Write-Output "%";
   }
-
   $fortune_count = $fortunes.Count;
   $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
   Write-Verbose -Message ($fortune_vmes);
