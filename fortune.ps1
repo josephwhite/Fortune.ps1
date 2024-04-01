@@ -148,9 +148,20 @@ param(
 )
 
 function Get-FortuneFromFile ($fortuneFile) {
-  $fortune_vmes = "Compiling fortunes from {0}" -f $fortuneFile;
-  Write-Verbose -Message ($fortune_vmes);
-  $fortunes_from_file = (Get-Content -Path $fortuneFile -raw) -replace "`r`n", "`n" -split "`n%`n";
+  $fortunes_from_file = @();
+  # Get each fortune file from path with wildcard.
+  $fortuneFilePath = Get-ChildItem -Path $fortuneFile;
+  Foreach ($path in $fortuneFilePath) {
+    $fortune_vmes = "Compiling fortunes from {0}" -f $path;
+    Write-Verbose -Message ($fortune_vmes);
+    $fortunes_from_file_buffer = (Get-Content -Path $path -Raw) -replace "`r`n", "`n" -split "`n%`n";
+    $fortunes_from_file += Foreach ($entry in $fortunes_from_file_buffer) {
+      [PSCustomObject] @{
+        Fortune = $entry
+        Path = $path.Fullname
+      };
+    }
+  }
 
   return $fortunes_from_file;
 }
@@ -206,14 +217,14 @@ function Select-FortunesByPattern($fortunes) {
 
 function Show-Fortune($fortunes) {
   $final_fortune = $fortunes | Get-Random;
-  Write-Output $final_fortune;
+  Write-Output $final_fortune.Fortune;
 
   return;
 }
 
 function Show-PossibleFortuneList($fortunes) {
   foreach ($entry in $fortunes) {
-    Write-Output $entry;
+    Write-Output $entry.Fortune;
     Write-Output "%";
   }
   $fortune_count = $fortunes.Count;
