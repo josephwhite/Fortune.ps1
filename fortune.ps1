@@ -94,6 +94,10 @@
   fortune.ps1 -m *bar*
   fortune.ps1 -regex [0-9][0-9]
   .EXAMPLE
+  fortune.ps1 -Percentage
+  fortune.ps1 -Percentage -Group Foo
+  fortune.ps1 -p -File 'C:\foorbar\fortunes\*'
+  .EXAMPLE
   fortune.ps1 -Help
   fortune.ps1 -h
   .EXAMPLE
@@ -141,6 +145,10 @@ param(
   [Alias("m","regex")]
   [AllowEmptyString()]
   [string]$Match,
+
+  [Parameter()]
+  [Alias("p")]
+  [switch]$Percentage,
 
   [Parameter()]
   [Alias("h")]
@@ -234,6 +242,17 @@ function Show-PossibleFortuneList($fortunes) {
   return;
 }
 
+function Show-FortunePercentageByFile($fortunes) {
+  $total_count = $fortunes.Count;
+  $unique_paths = $fortunes | Sort-Object -Unique -Property Path | Select-Object -Property Path;
+  $unique_paths | Add-Member -NotePropertyName Percentage -NotePropertyValue 0.0;
+  foreach ($path in $unique_paths) {
+    $subsection = $fortunes | Where-Object { $_.Path -eq $path.Path; }
+    $path.Percentage = [double]($subsection.Count/$total_count) * 100;
+  }
+  $unique_paths
+}
+
 if ($Help) {
   Get-Help $PSCommandPath;
   Write-Output "";
@@ -265,6 +284,12 @@ if ($File) {
   }
   $f = Get-FortuneFromFile($File);
   $f = Select-FortunesByLength($f);
+
+  if ($Percentage) {
+    Show-FortunePercentageByFile($f);
+    exit 0;
+  }
+
   if ($Match) {
     $f = Select-FortunesByPattern($f);
     Show-PossibleFortuneList($f);
@@ -299,6 +324,12 @@ if ($Group) {
   }
   $f = Get-FortuneFromFileCollection $Group $cfg;
   $f = Select-FortunesByLength($f);
+
+  if ($Percentage) {
+    Show-FortunePercentageByFile($f);
+    exit 0;
+  }
+
   if ($Match) {
     $f = Select-FortunesByPattern($f);
     Show-PossibleFortuneList($f);

@@ -39,6 +39,7 @@ Please read the `Get-Help` for example calls and in-depth parameter descriptions
 | -s [#]       | Only use quotes shorter than the length specified.              |
 | -n [#]       | Only use quotes that are exactly the length given.              |
 | -m [pattern] | Print all quotes matching the regex pattern given.              |
+| -p           | Print filepaths of Fortune files and percentages.               |
 
 
 ## TODO
