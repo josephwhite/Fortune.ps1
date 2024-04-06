@@ -1,8 +1,10 @@
-"default": [
-  "C:\\foobar\\fortunes\\*",
-],
-"TV": [
-  "C:\\foobar\\fortunes\\xfiles", 
-  "C:\\bazbar\\breakingbad.txt",
-  "D:\\path\\simpsons.txt"
-]
+{
+  "default": [
+    "C:\\foobar\\fortunes\\*",
+  ],
+  "TV": [
+    "C:\\foobar\\fortunes\\xfiles", 
+    "C:\\bazbar\\breakingbad.txt",
+    "D:\\path\\simpsons.txt"
+  ]
+}

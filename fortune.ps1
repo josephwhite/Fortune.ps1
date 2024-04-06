@@ -28,13 +28,15 @@
   ```
   Example format of fortune_config.json
   ```json
-    "default": [
-      "C:\\foobar\\fortunes\\*",
-    ],
-    "TV": [
-      "C:\\foobar\\fortunes\\xfiles",
-      "C:\\foobar\\fortunes\\breakingbad.txt"
-    ]
+    {
+      "default": [
+        "C:\\foobar\\fortunes\\*",
+      ],
+      "TV": [
+        "C:\\foobar\\fortunes\\xfiles",
+        "C:\\foobar\\fortunes\\breakingbad.txt"
+      ]
+    }
   ```
   Example format of fortune_config.psd1
   ```psd1
@@ -94,6 +96,7 @@
   fortune.ps1 -m *bar*
   fortune.ps1 -regex [0-9][0-9]
   .EXAMPLE
+  Just print filepaths and percentages.
   fortune.ps1 -Percentage
   fortune.ps1 -Percentage -Group Foo
   fortune.ps1 -p -File 'C:\foorbar\fortunes\*'
@@ -110,8 +113,8 @@
     - PSToml
       - Needed to parse TOML files.
       - https://www.powershellgallery.com/packages/PSToml/
-        - 0.3.0 supports PowerShell v5.1+
-        - 0.2.0 supports PowerShell v7.2+ (not recommended)
+        - v0.3.0+ supports PowerShell v5.1+
+        - v0.2.0 supports PowerShell v7.2+ (not recommended)
 #>
 param(
   [Parameter()]
@@ -155,11 +158,20 @@ param(
   [switch]$Help
 )
 
-function Get-FortuneFromFile ($fortuneFile) {
+<#
+  .SYNOPSIS
+  Converts a Fortune file to an array of Fortunes.
+  .PARAMETER FortuneFile
+  Path of Fortune file.
+#>
+function Get-FortuneFromFile {
+  param(
+    [string]$FortuneFile
+  )
   $fortunes_from_file = @();
   # Get each fortune file from path with wildcard.
-  $fortuneFilePath = Get-ChildItem -Path $fortuneFile;
-  Foreach ($path in $fortuneFilePath) {
+  $FortuneFileItem = Get-ChildItem -Path $FortuneFile;
+  Foreach ($path in $FortuneFileItem) {
     $fortune_vmes = "Compiling fortunes from {0}" -f $path;
     Write-Verbose -Message ($fortune_vmes);
     $fortunes_from_file_buffer = (Get-Content -Path $path -Raw) -replace "`r`n", "`n" -split "`n%`n";
@@ -174,64 +186,130 @@ function Get-FortuneFromFile ($fortuneFile) {
   return $fortunes_from_file;
 }
 
-function Get-FortuneFromFileCollection($tag, [System.Object]$c) {
+<#
+  .SYNOPSIS
+  Converts a group of Fortune files to an array of Fortunes.
+  .PARAMETER Tag
+  Group of Fortune files.
+  .PARAMETER ConfigObj
+  Object representation of Config file to pull Tag from.
+  Using System.Object class to support multiple config formats and how they are imported to PowerShell.
+    TOML -> OrderedDictionary
+    JSON -> PSCustomObject
+    PDS1 -> Hashtable
+  System.Object is the BaseType of the above Types.
+
+#>
+function Get-FortuneFromFileCollection {
+  param(
+    $Tag,
+    [System.Object]$ConfigObj
+  )
+  $FilesInGroup = $ConfigObj.$Tag
   $fortunes_from_files = @();
-  Foreach ($path in $c.$tag) {
-    $fortunes_from_files_buffer = Get-FortuneFromFile($path);
+  Foreach ($path in $FilesInGroup) {
+    $fortunes_from_files_buffer = Get-FortuneFromFile -FortuneFile $path;
     $fortunes_from_files += $fortunes_from_files_buffer;
   }
 
   return $fortunes_from_files;
 }
 
-function Select-FortunesByLength($fortunes) {
-  $fortune_count_before = $fortunes.Count;
+<#
+  .SYNOPSIS
+  Filter an array of Fortunes by character length.
+  .PARAMETER Fortunes
+  Array of Fortunes to filter.
+  .PARAMETER Long
+  Filter for fortunes that are longer than the given character length if present.
+  .PARAMETER Short
+  Filter for fortunes that are shorter than the given character length if present.
+  .PARAMETER Length
+  Filter for fortunes with the given character length if present.
+#>
+function Select-FortunesByLength {
+  param(
+    [PSCustomObject[]]$Fortunes,
+    [int]$Long,
+    [int]$Short,
+    [int]$Length
+  )
+  $fortune_count_before = $Fortunes.Count;
   if ($Long) {
-    $fortunes = $fortunes | Where-Object {
-      $_.Length -ge $Long;
+    $Fortunes = $Fortunes | Where-Object {
+      $_.Fortune.Length -ge $Long;
     }
   }
   if ($Short) {
-    $fortunes = $fortunes | Where-Object {
-      $_.Length -le $Short;
+    $Fortunes = $Fortunes | Where-Object {
+      $_.Fortune.Length -le $Short;
     }
   }
   if ($Length) {
-    $fortunes = $fortunes | Where-Object {
-      $_.Length -eq $Length;
+    $Fortunes = $Fortunes | Where-Object {
+      $_.Fortune.Length -eq $Length;
     }
   }
-  $fortune_count_after = $fortunes.Count;
+  $fortune_count_after = $Fortunes.Count;
   $fortune_vmes = "{0} to {1} fortune(s) after length filter." -f $fortune_count_before, $fortune_count_after;
   Write-Verbose -Message ($fortune_vmes);
 
-  return $fortunes;
+  return $Fortunes;
 }
 
-function Select-FortunesByPattern($fortunes) {
-  $fortune_count_before = $fortunes.Count;
-  if ($Match) {
-    $fortunes = $fortunes | Where-Object {
-      $_ -match $Match;
+<#
+  .SYNOPSIS
+  Filter an array of Fortunes by character matching.
+  .PARAMETER Fortunes
+  Array of Fortunes to filter.
+  .PARAMETER Pattern
+  Filter and prints fortunes matching a given REGEX pattern.
+#>
+function Select-FortunesByPattern {
+  param(
+    [PSCustomObject[]]$Fortunes,
+    [string]$Pattern
+  )
+  $fortune_count_before = $Fortunes.Count;
+  if ($Pattern) {
+    $Fortunes = $Fortunes | Where-Object {
+      $_.Fortune -match $Pattern;
     }
   }
-  $fortune_count_after = $fortunes.Count;
+  $fortune_count_after = $Fortunes.Count;
   $fortune_vmes = "{0} to {1} fortune(s) after pattern filter." -f $fortune_count_before, $fortune_count_after;
   Write-Verbose -Message ($fortune_vmes);
 
   return $fortunes;
 }
 
-
-function Show-Fortune($fortunes) {
-  $final_fortune = $fortunes | Get-Random;
+<#
+  .SYNOPSIS
+  Output a random Fortune from an array.
+  .PARAMETER Fortunes
+  Array of Fortunes.
+#>
+function Show-Fortune {
+  param(
+    [PSCustomObject[]]$Fortunes
+  )
+  $final_fortune = $Fortunes | Get-Random;
   Write-Output $final_fortune.Fortune;
 
   return;
 }
 
-function Show-PossibleFortuneList($fortunes) {
-  foreach ($entry in $fortunes) {
+<#
+  .SYNOPSIS
+  Output each Fortune in an array, delimited by "%"
+  .PARAMETER Fortunes
+  Array of Fortunes.
+#>
+function Show-PossibleFortuneList {
+  param(
+    [PSCustomObject[]]$Fortunes
+  )
+  foreach ($entry in $Fortunes) {
     Write-Output $entry.Fortune;
     Write-Output "%";
   }
@@ -242,15 +320,26 @@ function Show-PossibleFortuneList($fortunes) {
   return;
 }
 
-function Show-FortunePercentageByFile($fortunes) {
-  $total_count = $fortunes.Count;
-  $unique_paths = $fortunes | Sort-Object -Unique -Property Path | Select-Object -Property Path;
+<#
+  .SYNOPSIS
+  Output the unique Fortune Filepaths and the chance a Fortune would be picked from each file.
+  .PARAMETER Fortunes
+  Array of Fortunes.
+#>
+function Show-FortunePercentageByFile {
+  param(
+    [PSCustomObject[]]$Fortunes
+  )
+  $total_count = $Fortunes.Count;
+  # Aggregate the unique Fortune Files
+  $unique_paths = $Fortunes | Sort-Object -Unique -Property Path | Select-Object -Property Path;
+  # Calculate Percentage for each unique path
   $unique_paths | Add-Member -NotePropertyName Percentage -NotePropertyValue 0.0;
   foreach ($path in $unique_paths) {
-    $subsection = $fortunes | Where-Object { $_.Path -eq $path.Path; }
+    $subsection = $Fortunes | Where-Object { $_.Path -eq $path.Path; }
     $path.Percentage = [double]($subsection.Count/$total_count) * 100;
   }
-  $unique_paths
+  $unique_paths;
 }
 
 if ($Help) {
@@ -282,19 +371,19 @@ if ($File) {
     Write-Error -Message "Fortune file not found or invalid path." -Category ReadError;
     exit 1;
   }
-  $f = Get-FortuneFromFile($File);
-  $f = Select-FortunesByLength($f);
+  $f = Get-FortuneFromFile -FortuneFile $File;
+  $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
 
   if ($Percentage) {
-    Show-FortunePercentageByFile($f);
+    Show-FortunePercentageByFile -Fortunes $f;
     exit 0;
   }
 
   if ($Match) {
-    $f = Select-FortunesByPattern($f);
-    Show-PossibleFortuneList($f);
+    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
+    Show-PossibleFortuneList -Fortunes $f;
   } else {
-    Show-Fortune($f);
+    Show-Fortune -Fortunes $f;
   }
   exit 0;
 }
@@ -315,26 +404,26 @@ if ($Group) {
       $cfg = Get-Content -Raw -Path $Config | ConvertFrom-Json;
     }
     ".PSD1" {
-      $cfg = Import-PowerShellDataFile $Config;
+      $cfg = Import-PowerShellDataFile -Path $Config -SkipLimitCheck;
     }
     default {
       Write-Error -Message "Config file type not supported." -Category InvalidType;
       exit 1;
     }
   }
-  $f = Get-FortuneFromFileCollection $Group $cfg;
-  $f = Select-FortunesByLength($f);
+  $f = Get-FortuneFromFileCollection -Tag $Group -ConfigObj $cfg;
+  $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
 
   if ($Percentage) {
-    Show-FortunePercentageByFile($f);
+    Show-FortunePercentageByFile -Fortunes $f;
     exit 0;
   }
 
   if ($Match) {
-    $f = Select-FortunesByPattern($f);
-    Show-PossibleFortuneList($f);
+    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
+    Show-PossibleFortuneList -Fortunes $f;
   } else {
-    Show-Fortune($f);
+    Show-Fortune -Fortunes $f;
   }
   exit 0;
 }
