@@ -36,7 +36,7 @@ jobs:
     # Run on multiple operating systems
     strategy:
       matrix:
-        platform: [ubuntu-latest, macos-latest, windows-latest]
+        platform: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -61,10 +61,16 @@ jobs:
         with:
           sarif_file: psscriptanalyzer-results.sarif
 
-      # Install Pester (https://github.com/pester/Pester)
-      - name: Install Pester
+      # Test code.
+      # Installs the following modules for PowerShell
+      # - Pester (https://github.com/pester/Pester)
+      # - PSToml (https://github.com/jborean93/PSToml)
+      # Install
+      - name: Install Pester and PSToml
         shell: pwsh
-        run: Install-Module -Name Pester -Force -Scope CurrentUser
+        run: |
+          Install-Module -Name Pester -Force -Scope CurrentUser
+          Install-Module -Name PSToml -Force -Scope CurrentUser
       
       # Run Pester tests with Code Coverage
       - name: Run Pester Tests
