@@ -68,6 +68,7 @@ jobs:
       
       # Run Pester tests with Code Coverage
       - name: Run Pester Tests
+        shell: pwsh
         run: |
           $pesterconfig = New-PesterConfiguration
           $pesterconfig.Run.Path = "."
