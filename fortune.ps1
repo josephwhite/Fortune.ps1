@@ -69,6 +69,8 @@
   .PARAMETER Match
   Filter and prints fortunes matching a given REGEX pattern.
   Each fortune will be seperated by a single %.
+  .PARAMETER Percentage
+  Prints an array of fortune filepaths, thier percentages, and terminates if present.
   .PARAMETER Help
   Prints Full Get-Help output and terminates if present.
   .EXAMPLE
@@ -170,7 +172,7 @@ function Get-FortuneFromFile {
   )
   $fortunes_from_file = @();
   # Get each fortune file from path with wildcard.
-  $FortuneFileItem = Get-ChildItem -Path $FortuneFile;
+  $FortuneFileItem = Get-Item -Path $FortuneFile;
   Foreach ($path in $FortuneFileItem) {
     $fortune_vmes = "Compiling fortunes from {0}" -f $path;
     Write-Verbose -Message ($fortune_vmes);
@@ -313,9 +315,6 @@ function Show-PossibleFortuneList {
     Write-Output $entry.Fortune;
     Write-Output "%";
   }
-  $fortune_count = $fortunes.Count;
-  $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
-  Write-Verbose -Message ($fortune_vmes);
 
   return;
 }
@@ -373,6 +372,7 @@ if ($File) {
   }
   $f = Get-FortuneFromFile -FortuneFile $File;
   $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
+  $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
 
   if ($Percentage) {
     Show-FortunePercentageByFile -Fortunes $f;
@@ -380,11 +380,15 @@ if ($File) {
   }
 
   if ($Match) {
-    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
     Show-PossibleFortuneList -Fortunes $f;
-  } else {
-    Show-Fortune -Fortunes $f;
+    $fortune_count = $f.Count;
+    $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
+    Write-Verbose -Message ($fortune_vmes);
+    exit 0;
   }
+
+  Show-Fortune -Fortunes $f;
+
   exit 0;
 }
 
@@ -413,6 +417,7 @@ if ($Group) {
   }
   $f = Get-FortuneFromFileCollection -Tag $Group -ConfigObj $cfg;
   $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
+  $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
 
   if ($Percentage) {
     Show-FortunePercentageByFile -Fortunes $f;
@@ -420,11 +425,15 @@ if ($Group) {
   }
 
   if ($Match) {
-    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
     Show-PossibleFortuneList -Fortunes $f;
-  } else {
-    Show-Fortune -Fortunes $f;
+    $fortune_count = $f.Count;
+    $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
+    Write-Verbose -Message ($fortune_vmes);
+    exit 0;
   }
+
+  Show-Fortune -Fortunes $f;
+
   exit 0;
 }
 
