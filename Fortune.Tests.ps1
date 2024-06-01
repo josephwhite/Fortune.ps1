@@ -48,7 +48,7 @@ default = [
 example = [
     '{1}'
 ]
-'@ -f $path_wtxt, $path_wtxt;
+'@ -f $path_wild, $path_wtxt;
             $cfg = $content | ConvertFrom-Toml;
         }
         It 'Parses TOML with default group' {
