@@ -119,45 +119,45 @@
         - v0.2.0 supports PowerShell v7.2+ (not recommended)
 #>
 param(
-  [Parameter()]
-  [Alias("f")]
-  [AllowEmptyString()]
-  [string]$File,
+    [Parameter()]
+    [Alias("f")]
+    [AllowEmptyString()]
+    [string]$File,
 
-  [Parameter()]
-  [Alias("g")]
-  [AllowEmptyString()]
-  [string]$Group = "default",
+    [Parameter()]
+    [Alias("g")]
+    [AllowEmptyString()]
+    [string]$Group = "default",
 
-  [Parameter()]
-  [Alias("c")]
-  [AllowEmptyString()]
-  [string]$Config = $PSScriptRoot + "\fortune_config.psd1",
+    [Parameter()]
+    [Alias("c")]
+    [AllowEmptyString()]
+    [string]$Config = $PSScriptRoot + "\fortune_config.psd1",
 
-  [Parameter()]
-  [Alias("l")]
-  [int]$Long,
+    [Parameter()]
+    [Alias("l")]
+    [int]$Long,
 
-  [Parameter()]
-  [Alias("s")]
-  [int]$Short,
+    [Parameter()]
+    [Alias("s")]
+    [int]$Short,
 
-  [Parameter()]
-  [Alias("ls", "n")]
-  [int]$Length,
+    [Parameter()]
+    [Alias("ls", "n")]
+    [int]$Length,
 
-  [Parameter()]
-  [Alias("m","regex")]
-  [AllowEmptyString()]
-  [string]$Match,
+    [Parameter()]
+    [Alias("m", "regex")]
+    [AllowEmptyString()]
+    [string]$Match,
 
-  [Parameter()]
-  [Alias("p")]
-  [switch]$Percentage,
+    [Parameter()]
+    [Alias("p")]
+    [switch]$Percentage,
 
-  [Parameter()]
-  [Alias("h")]
-  [switch]$Help
+    [Parameter()]
+    [Alias("h")]
+    [switch]$Help
 )
 
 <#
@@ -167,25 +167,24 @@ param(
   Path of Fortune file.
 #>
 function Get-FortuneFromFile {
-  param(
-    [string]$FortuneFile
-  )
-  $fortunes_from_file = @();
-  # Get each fortune file from path with wildcard.
-  $FortuneFileItem = Get-Item -Path $FortuneFile;
-  Foreach ($path in $FortuneFileItem) {
-    $fortune_vmes = "Compiling fortunes from {0}" -f $path;
-    Write-Verbose -Message ($fortune_vmes);
-    $fortunes_from_file_buffer = (Get-Content -Path $path -Raw) -replace "`r`n", "`n" -split "`n%`n";
-    $fortunes_from_file += Foreach ($entry in $fortunes_from_file_buffer) {
-      [PSCustomObject] @{
-        Fortune = $entry
-        Path = $path.Fullname
-      };
+    param(
+        [string]$FortuneFile
+    )
+    $fortunes_from_file = @();
+    # Get each fortune file from path with wildcard.
+    $FortuneFileItem = Get-Item -Path $FortuneFile;
+    Foreach ($path in $FortuneFileItem) {
+        $fortune_vmes = "Compiling fortunes from {0}" -f $path;
+        Write-Verbose -Message ($fortune_vmes);
+        $fortunes_from_file_buffer = (Get-Content -Path $path -Raw) -replace "`r`n", "`n" -split "`n%`n";
+        $fortunes_from_file += Foreach ($entry in $fortunes_from_file_buffer) {
+            [PSCustomObject] @{
+                Fortune = $entry
+                Path    = $path.Fullname
+            };
+        }
     }
-  }
-
-  return $fortunes_from_file;
+    return $fortunes_from_file;
 }
 
 <#
@@ -203,18 +202,18 @@ function Get-FortuneFromFile {
 
 #>
 function Get-FortuneFromFileCollection {
-  param(
-    $Tag,
-    [System.Object]$ConfigObj
-  )
-  $FilesInGroup = $ConfigObj.$Tag
-  $fortunes_from_files = @();
-  Foreach ($path in $FilesInGroup) {
-    $fortunes_from_files_buffer = Get-FortuneFromFile -FortuneFile $path;
-    $fortunes_from_files += $fortunes_from_files_buffer;
-  }
+    param(
+        $Tag,
+        [System.Object]$ConfigObj
+    )
+    $FilesInGroup = $ConfigObj.$Tag
+    $fortunes_from_files = @();
+    Foreach ($path in $FilesInGroup) {
+        $fortunes_from_files_buffer = Get-FortuneFromFile -FortuneFile $path;
+        $fortunes_from_files += $fortunes_from_files_buffer;
+    }
 
-  return $fortunes_from_files;
+    return $fortunes_from_files;
 }
 
 <#
@@ -230,33 +229,33 @@ function Get-FortuneFromFileCollection {
   Filter for fortunes with the given character length if present.
 #>
 function Select-FortunesByLength {
-  param(
-    [PSCustomObject[]]$Fortunes,
-    [int]$Long,
-    [int]$Short,
-    [int]$Length
-  )
-  $fortune_count_before = $Fortunes.Count;
-  if ($Long) {
-    $Fortunes = $Fortunes | Where-Object {
-      $_.Fortune.Length -ge $Long;
+    param(
+        [PSCustomObject[]]$Fortunes,
+        [int]$Long,
+        [int]$Short,
+        [int]$Length
+    )
+    $fortune_count_before = $Fortunes.Count;
+    if ($Long) {
+        $Fortunes = $Fortunes | Where-Object {
+            $_.Fortune.Length -ge $Long;
+        }
     }
-  }
-  if ($Short) {
-    $Fortunes = $Fortunes | Where-Object {
-      $_.Fortune.Length -le $Short;
+    if ($Short) {
+        $Fortunes = $Fortunes | Where-Object {
+            $_.Fortune.Length -le $Short;
+        }
     }
-  }
-  if ($Length) {
-    $Fortunes = $Fortunes | Where-Object {
-      $_.Fortune.Length -eq $Length;
+    if ($Length) {
+        $Fortunes = $Fortunes | Where-Object {
+            $_.Fortune.Length -eq $Length;
+        }
     }
-  }
-  $fortune_count_after = $Fortunes.Count;
-  $fortune_vmes = "{0} to {1} fortune(s) after length filter." -f $fortune_count_before, $fortune_count_after;
-  Write-Verbose -Message ($fortune_vmes);
+    $fortune_count_after = $Fortunes.Count;
+    $fortune_vmes = "{0} to {1} fortune(s) after length filter." -f $fortune_count_before, $fortune_count_after;
+    Write-Verbose -Message ($fortune_vmes);
 
-  return $Fortunes;
+    return $Fortunes;
 }
 
 <#
@@ -268,21 +267,21 @@ function Select-FortunesByLength {
   Filter and prints fortunes matching a given REGEX pattern.
 #>
 function Select-FortunesByPattern {
-  param(
-    [PSCustomObject[]]$Fortunes,
-    [string]$Pattern
-  )
-  $fortune_count_before = $Fortunes.Count;
-  if ($Pattern) {
-    $Fortunes = $Fortunes | Where-Object {
-      $_.Fortune -match $Pattern;
+    param(
+        [PSCustomObject[]]$Fortunes,
+        [string]$Pattern
+    )
+    $fortune_count_before = $Fortunes.Count;
+    if ($Pattern) {
+        $Fortunes = $Fortunes | Where-Object {
+            $_.Fortune -match $Pattern;
+        }
     }
-  }
-  $fortune_count_after = $Fortunes.Count;
-  $fortune_vmes = "{0} to {1} fortune(s) after pattern filter." -f $fortune_count_before, $fortune_count_after;
-  Write-Verbose -Message ($fortune_vmes);
+    $fortune_count_after = $Fortunes.Count;
+    $fortune_vmes = "{0} to {1} fortune(s) after pattern filter." -f $fortune_count_before, $fortune_count_after;
+    Write-Verbose -Message ($fortune_vmes);
 
-  return $fortunes;
+    return $fortunes;
 }
 
 <#
@@ -292,13 +291,13 @@ function Select-FortunesByPattern {
   Array of Fortunes.
 #>
 function Show-Fortune {
-  param(
-    [PSCustomObject[]]$Fortunes
-  )
-  $final_fortune = $Fortunes | Get-Random;
-  Write-Output $final_fortune.Fortune;
+    param(
+        [PSCustomObject[]]$Fortunes
+    )
+    $final_fortune = $Fortunes | Get-Random;
+    Write-Output $final_fortune.Fortune;
 
-  return;
+    return;
 }
 
 <#
@@ -308,15 +307,15 @@ function Show-Fortune {
   Array of Fortunes.
 #>
 function Show-PossibleFortuneList {
-  param(
-    [PSCustomObject[]]$Fortunes
-  )
-  foreach ($entry in $Fortunes) {
-    Write-Output $entry.Fortune;
-    Write-Output "%";
-  }
+    param(
+        [PSCustomObject[]]$Fortunes
+    )
+    foreach ($entry in $Fortunes) {
+        Write-Output $entry.Fortune;
+        Write-Output "%";
+    }
 
-  return;
+    return;
 }
 
 <#
@@ -326,115 +325,115 @@ function Show-PossibleFortuneList {
   Array of Fortunes.
 #>
 function Show-FortunePercentageByFile {
-  param(
-    [PSCustomObject[]]$Fortunes
-  )
-  $total_count = $Fortunes.Count;
-  # Aggregate the unique Fortune Files
-  $unique_paths = $Fortunes | Sort-Object -Unique -Property Path | Select-Object -Property Path;
-  # Calculate Percentage for each unique path
-  $unique_paths | Add-Member -NotePropertyName Percentage -NotePropertyValue 0.0;
-  foreach ($path in $unique_paths) {
-    $subsection = $Fortunes | Where-Object { $_.Path -eq $path.Path; }
-    $path.Percentage = [double]($subsection.Count/$total_count) * 100;
-  }
-  $unique_paths;
+    param(
+        [PSCustomObject[]]$Fortunes
+    )
+    $total_count = $Fortunes.Count;
+    # Aggregate the unique Fortune Files
+    $unique_paths = $Fortunes | Sort-Object -Unique -Property Path | Select-Object -Property Path;
+    # Calculate Percentage for each unique path
+    $unique_paths | Add-Member -NotePropertyName Percentage -NotePropertyValue 0.0;
+    foreach ($path in $unique_paths) {
+        $subsection = $Fortunes | Where-Object { $_.Path -eq $path.Path; }
+        $path.Percentage = [double]($subsection.Count / $total_count) * 100;
+    }
+    $unique_paths;
 }
 
 if ($Help) {
-  Get-Help $PSCommandPath;
-  Write-Output "";
-  $h1 = "
+    Get-Help $PSCommandPath;
+    Write-Output "";
+    $h1 = "
   Run the following command for full documentation.
     Get-Help $PSCommandPath -Full
-  "
-  Write-Output $h1;
-  exit 0;
+"
+    Write-Output $h1;
+    exit 0;
 }
 
 # Parameter Priority Logic
 #    File is above Group
 #    Length is above Long and Short
 if ($File -and $Group) {
-  $Group = $NULL;
+    $Group = $NULL;
 }
 
 if ($Length) {
-  $Short = $NULL;
-  $Long = $NULL;
+    $Short = $NULL;
+    $Long = $NULL;
 }
 
 if ($File) {
-  # Validation: File not a valid path
-  if (!(Test-Path($File))) {
-    Write-Error -Message "Fortune file not found or invalid path." -Category ReadError;
-    exit 1;
-  }
-  $f = Get-FortuneFromFile -FortuneFile $File;
-  $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
-  $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
+    # Validation: File not a valid path
+    if (!(Test-Path($File))) {
+        Write-Error -Message "Fortune file not found or invalid path." -Category ReadError;
+        exit 1;
+    }
+    $f = Get-FortuneFromFile -FortuneFile $File;
+    $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
+    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
 
-  if ($Percentage) {
-    Show-FortunePercentageByFile -Fortunes $f;
+    if ($Percentage) {
+        Show-FortunePercentageByFile -Fortunes $f;
+        exit 0;
+    }
+
+    if ($Match) {
+        Show-PossibleFortuneList -Fortunes $f;
+        $fortune_count = $f.Count;
+        $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
+        Write-Verbose -Message ($fortune_vmes);
+        exit 0;
+    }
+
+    Show-Fortune -Fortunes $f;
+
     exit 0;
-  }
-
-  if ($Match) {
-    Show-PossibleFortuneList -Fortunes $f;
-    $fortune_count = $f.Count;
-    $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
-    Write-Verbose -Message ($fortune_vmes);
-    exit 0;
-  }
-
-  Show-Fortune -Fortunes $f;
-
-  exit 0;
 }
 
 if ($Group) {
-  # Validation: File not a valid path
-  if (!(Test-Path($Config))) {
-    Write-Error -Message "Config file not found or invalid path." -Category ReadError;
-    exit 1;
-  }
-  # Get data from config file.
-  $config_file_ext = ((Get-Item $Config).Extension).ToUpper()
-  switch($config_file_ext) {
-    ".TOML" {
-      $cfg = Get-Content -Path $Config | ConvertFrom-Toml;
+    # Validation: File not a valid path
+    if (!(Test-Path($Config))) {
+        Write-Error -Message "Config file not found or invalid path." -Category ReadError;
+        exit 1;
     }
-    ".JSON" {
-      $cfg = Get-Content -Raw -Path $Config | ConvertFrom-Json;
+    # Get data from config file.
+    $config_file_ext = ((Get-Item $Config).Extension).ToUpper()
+    switch ($config_file_ext) {
+        ".TOML" {
+            $cfg = Get-Content -Path $Config | ConvertFrom-Toml;
+        }
+        ".JSON" {
+            $cfg = Get-Content -Raw -Path $Config | ConvertFrom-Json;
+        }
+        ".PSD1" {
+            $cfg = Import-PowerShellDataFile -Path $Config -SkipLimitCheck;
+        }
+        default {
+            Write-Error -Message "Config file type not supported." -Category InvalidType;
+            exit 1;
+        }
     }
-    ".PSD1" {
-      $cfg = Import-PowerShellDataFile -Path $Config -SkipLimitCheck;
-    }
-    default {
-      Write-Error -Message "Config file type not supported." -Category InvalidType;
-      exit 1;
-    }
-  }
-  $f = Get-FortuneFromFileCollection -Tag $Group -ConfigObj $cfg;
-  $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
-  $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
+    $f = Get-FortuneFromFileCollection -Tag $Group -ConfigObj $cfg;
+    $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length;
+    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match;
 
-  if ($Percentage) {
-    Show-FortunePercentageByFile -Fortunes $f;
+    if ($Percentage) {
+        Show-FortunePercentageByFile -Fortunes $f;
+        exit 0;
+    }
+
+    if ($Match) {
+        Show-PossibleFortuneList -Fortunes $f;
+        $fortune_count = $f.Count;
+        $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
+        Write-Verbose -Message ($fortune_vmes);
+        exit 0;
+    }
+
+    Show-Fortune -Fortunes $f;
+
     exit 0;
-  }
-
-  if ($Match) {
-    Show-PossibleFortuneList -Fortunes $f;
-    $fortune_count = $f.Count;
-    $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match;
-    Write-Verbose -Message ($fortune_vmes);
-    exit 0;
-  }
-
-  Show-Fortune -Fortunes $f;
-
-  exit 0;
 }
 
 exit 0;

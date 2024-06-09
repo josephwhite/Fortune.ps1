@@ -1,18 +1,18 @@
 BeforeAll {
-    . $PSCommandPath.Replace('.Tests.ps1','.ps1') -Help | Out-Null;
-    $foobar_fortune_content = @'
+    . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null;
+    $script:foobar_fortune_content = @'
 foo
 %
 bar
 %
 l0l -- lma0 even.
 '@;
-    $foobar_fortunes_buffer = $foobar_fortune_content -replace "`r`n", "`n" -split "`n%`n"
-    $foobar_fortunes = Foreach ($entry in $foobar_fortunes_buffer) {
-      [PSCustomObject] @{
-        Fortune = $entry
-        Path = "C:\foo\fortunes.txt"
-      };
+    $script:foobar_fortunes_buffer = $foobar_fortune_content -replace "`r`n", "`n" -split "`n%`n"
+    $script:foobar_fortunes = Foreach ($entry in $foobar_fortunes_buffer) {
+        [PSCustomObject] @{
+            Fortune = $entry
+            Path    = "C:\foo\fortunes.txt"
+        };
     }
 }
 
@@ -41,7 +41,7 @@ Describe 'Get-FortuneFromFileCollection' {
         BeforeEach {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             $path_wild = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "*")
-            $content= @'
+            $content = @'
 default = [
     '{0}',
 ]
@@ -68,7 +68,7 @@ example = [
         BeforeEach {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             $path_wild = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "*")
-            $content= @{
+            $content = @{
                 default = @(
                     $path_wild
                 )
@@ -77,7 +77,7 @@ example = [
                 )
             }
             $content = $content | ConvertTo-Json -Depth 100
-            $cfg = ConvertFrom-Json $content
+            $script:cfg = ConvertFrom-Json $content
         }
         It 'Parses JSON with default group' {
             $f = Get-FortuneFromFileCollection -Tag "default" -ConfigObj $cfg;
@@ -96,7 +96,7 @@ example = [
         BeforeEach {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             $path_wild = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "*")
-            $cfg= @{
+            $script:cfg = @{
                 default = @(
                     $path_wild
                 )
@@ -123,7 +123,7 @@ example = [
 Describe 'Select-FortunesByLength' {
     BeforeEach {
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
-        $f = Get-FortuneFromFile -FortuneFile $path;
+        $script:f = Get-FortuneFromFile -FortuneFile $path;
     }
     It 'Filters Fortunes >= x (Longer)' {
         $f = Select-FortunesByLength -Fortunes $f -Long 20;
@@ -161,7 +161,7 @@ Describe 'Select-FortunesByLength' {
 Describe 'Select-FortunesByPattern' {
     BeforeEach {
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
-        $f = Get-FortuneFromFile -FortuneFile $path;
+        $script:f = Get-FortuneFromFile -FortuneFile $path;
     }
     It 'Matches keywords' {
         $f = Select-FortunesByPattern -Fortunes $f -Pattern "You"
@@ -180,7 +180,7 @@ Describe 'Select-FortunesByPattern' {
 Describe 'Show-Fortune' {
     BeforeEach {
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
-        $f = Get-FortuneFromFile -FortuneFile $path;
+        $script:f = Get-FortuneFromFile -FortuneFile $path;
     }
     It 'Outputs random Fortune' {
         $fortune = Show-Fortune -Fortunes $f;
@@ -194,7 +194,7 @@ Describe 'Show-Fortune' {
 Describe 'Show-PossibleFortuneList' {
     BeforeEach {
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
-        $f = Get-FortuneFromFile -FortuneFile $path;
+        $script:f = Get-FortuneFromFile -FortuneFile $path;
     }
     It 'Outputs fortunes, delimited by %' {
         $fortune = Show-PossibleFortuneList -Fortunes $f;
@@ -209,7 +209,7 @@ Describe 'Show-PossibleFortuneList' {
 Describe 'Show-FortunePercentageByFile' {
     BeforeEach {
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
-        $f = Get-FortuneFromFile -FortuneFile $path;
+        $script:f = Get-FortuneFromFile -FortuneFile $path;
     }
     It 'Knows file paths' {
         $percents = Show-FortunePercentageByFile -Fortunes $f;
@@ -224,5 +224,60 @@ Describe 'Show-FortunePercentageByFile' {
     It 'Outputs nothing with no input' {
         $percents = Show-FortunePercentageByFile
         $percents | Should -BeNullOrEmpty
+    }
+}
+
+Describe 'Fortune.ps1' {
+    BeforeEach {
+        $script:script_path = $PSCommandPath.Replace('.Tests.ps1', '.ps1')
+    }
+    Context 'Util' {
+        It 'Outputs Get-Help' {
+            $script_gethelp_output = (Get-Help -Name $script_path 2>&1 | Out-String) + "
+  Run the following command for full documentation.
+    Get-Help $script_path -Full
+
+
+";
+            $script_help_output = & $script_path -Help 2>&1 | Out-String;
+            $script_help_output | Should -Be $script_gethelp_output
+        }
+    }
+    Context 'Logic' {
+        It 'Gives priority to Length over Short and Long' {
+            $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            $script_output = & $script_path -File $path_wtxt -Long 20 -Short 100 -Length 50;
+            $script_output.Length | Should -Be 50;
+        }
+    }
+    Context 'Exit' {
+        It 'Returns Exit Code 1 for invalid path (File parameter)' {
+            & $script_path -File "``" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 1;
+        }
+        It 'Returns Exit Code 1 for invalid path (Config parameter)' {
+            & $script_path -Config "``" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 1;
+        }
+        It 'Returns Exit Code 0 for running successfully (File parameter)' {
+            $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            & $script_path -File $path_wtxt 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0;
+        }
+        It 'Returns Exit Code 0 for running successfully (File+Match parameter)' {
+            $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            & $script_path -File $path_wtxt -Match "You" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0;
+        }
+        It 'Returns Exit Code 0 for running successfully (File+Percentage parameter)' {
+            $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            & $script_path -File $path_wtxt -Percentage 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0;
+        }
     }
 }
