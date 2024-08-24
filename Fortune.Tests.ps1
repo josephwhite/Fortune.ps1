@@ -49,7 +49,7 @@ example = [
     '{1}'
 ]
 '@ -f $path_wild, $path_wtxt;
-            $cfg = $content | ConvertFrom-Toml;
+            $script:cfg = $content | ConvertFrom-Toml;
         }
         It 'Parses TOML with default group' {
             $f = Get-FortuneFromFileCollection -Tag "default" -ConfigObj $cfg;
@@ -251,16 +251,7 @@ Describe 'Fortune.ps1' {
         }
     }
     Context 'Exit' {
-        It 'Returns Exit Code 1 for invalid path (File parameter)' {
-            & $script_path -File "``" 2>&1
-            [int]$lec = $LASTEXITCODE
-            $lec | Should -Be 1;
-        }
-        It 'Returns Exit Code 1 for invalid path (Config parameter)' {
-            & $script_path -Config "``" 2>&1
-            [int]$lec = $LASTEXITCODE
-            $lec | Should -Be 1;
-        }
+        # Exit 0
         It 'Returns Exit Code 0 for running successfully (File parameter)' {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             & $script_path -File $path_wtxt 2>&1
@@ -278,6 +269,17 @@ Describe 'Fortune.ps1' {
             & $script_path -File $path_wtxt -Percentage 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0;
+        }
+        # Exit 1
+        It 'Returns Exit Code 1 for invalid path (File parameter)' {
+            & $script_path -File "``" -ErrorVariable ev -ErrorAction SilentlyContinue
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 1;
+        }
+        It 'Returns Exit Code 1 for invalid path (Config parameter)' {
+            & $script_path -Config "``" -ErrorVariable ev -ErrorAction SilentlyContinue
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 1;
         }
     }
 }
