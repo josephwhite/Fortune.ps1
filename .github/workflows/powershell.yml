@@ -39,7 +39,11 @@ jobs:
     # Run on multiple operating systems
     strategy:
       matrix:
-        platform: [windows-latest, macos-latest, ubuntu-latest]
+        platform: [windows-latest, macos-latest]
+        # Dot-sourcing with Pester on Ubuntu is buggy.
+        # Will add Linux testing back when resolved in seperate env.
+        #platform: [windows-latest, macos-latest, ubuntu-latest]
+    
     runs-on: ${{ matrix.platform }}
 
     steps:
