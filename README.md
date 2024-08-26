@@ -8,7 +8,7 @@ A PowerShell implementation of the [unix `fortune` program](https://www.wikipedi
 	-  Directory independent.
 	-  Arrays of filepaths.
 	-  Supports JSON, PSD1, and TOML.
-- Length and Pattern parameters. 
+- Length and Pattern parameters.
 - Comment-based help for `Get-Help` parsing.
 
 Usage of a TOML config file requires [PSTOML](https://github.com/jborean93/PSToml) and PowerShell v5.1+.

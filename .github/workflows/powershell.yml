@@ -34,8 +34,8 @@ jobs:
       # Needed by github/codeql-action/upload-sarif to upload code scan results
       security-events: write
       # Private repository permission to get the Action run status
-      actions: read 
-    
+      actions: read
+
     # Run on multiple operating systems
     strategy:
       matrix:
@@ -43,7 +43,7 @@ jobs:
         # Dot-sourcing with Pester on Ubuntu is buggy.
         # Will add Linux testing back when resolved in seperate env.
         #platform: [windows-latest, macos-latest, ubuntu-latest]
-    
+
     runs-on: ${{ matrix.platform }}
 
     steps:
@@ -77,7 +77,7 @@ jobs:
         run: |
           Install-Module -Name Pester -Force -Scope CurrentUser
           Install-Module -Name PSToml -Force -Scope CurrentUser
-      
+
       # Run Pester tests with Code Coverage
       - name: Run Pester Tests
         shell: pwsh
@@ -96,3 +96,7 @@ jobs:
         with:
           name: code-coverage-report-${{ matrix.platform }}
           path: pester-coverage-${{ matrix.platform }}.xml
+          if-no-files-found: warn
+          retention-days: 0
+          compression-level: 6
+          overwrite: false
