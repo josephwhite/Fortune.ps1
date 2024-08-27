@@ -281,5 +281,11 @@ Describe 'Fortune.ps1' {
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 1;
         }
+        It 'Returns Exit Code 1 for invalid Config file type' {
+            $ex_fortunes_path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            & $script_path -Config $ex_fortunes_path -ErrorVariable ev -ErrorAction SilentlyContinue
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 1;
+        }
     }
 }
