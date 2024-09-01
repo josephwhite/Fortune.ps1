@@ -356,6 +356,7 @@ if ($Help) {
 #    Length is above Long and Short
 if ($File -and $Group) {
     $Group = $NULL;
+    $Config = $NULL;
 }
 
 if ($Length) {

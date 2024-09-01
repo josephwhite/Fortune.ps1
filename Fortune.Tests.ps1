@@ -156,6 +156,14 @@ Describe 'Select-FortunesByLength' {
             $Fortune.Length | Should -Be 50;
         }
     }
+    It 'Filters everything out if Short < Long' {
+        $fb = $NULL
+        $fb = Select-FortunesByLength -Fortunes $f -Long 100 -Short 20
+        $fb | Should -BeNullOrEmpty
+        $fb = $NULL
+        $fb = Select-FortunesByLength -Fortunes $f -Long 100 -Short 20 -Length 50
+        $fb | Should -BeNullOrEmpty
+    }
 }
 
 Describe 'Select-FortunesByPattern' {
