@@ -37,14 +37,19 @@ jobs:
       actions: read
 
     # Run on multiple operating systems
+    #   platform  = Operating System for Github Action (https://github.com/actions/runner-images)
+    #   pestertag = Pester Tag for platform specific testing (https://pester.dev/docs/usage/tags)
     strategy:
       matrix:
-        platform: [windows-latest, macos-latest]
-        # Dot-sourcing with Pester on Ubuntu is buggy.
-        # Will add Linux testing back when resolved in seperate env.
-        #platform: [windows-latest, macos-latest, ubuntu-latest]
+          info:
+            - platform: "windows-latest"
+              pestertag: "WindowsOnly"
+            - platform: "macos-latest"
+              pestertag: "MacosOnly"
 
-    runs-on: ${{ matrix.platform }}
+            #platform: [windows-latest, macos-latest, ubuntu-latest]
+
+    runs-on: ${{ matrix.info.platform }}
 
     steps:
       # Checkout repo
@@ -85,17 +90,22 @@ jobs:
           $pesterconfig = New-PesterConfiguration
           $pesterconfig.Run.Path = "."
           $pesterconfig.CodeCoverage.Enabled = $true
-          $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.platform }}.xml"
+          $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.info.platform }}.xml"
           $pesterconfig.TestResult.Enabled = $true
+          $pesterconfig.TestResult.OutputPath = 'pester-tests-${{ matrix.info.platform }}.xml'
+          $pesterconfig.Filter.Tag = ${{ matrix.info.pestertag }}
           Invoke-Pester -Configuration $pesterconfig
 
-      # Upload the code coverage from Pester.
-      - name: Upload code coverage report
+      # Upload the Pester results.
+      - name: Upload Pester reports
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: code-coverage-report-${{ matrix.platform }}
-          path: pester-coverage-${{ matrix.platform }}.xml
+          name: pester-report-${{ matrix.info.platform }}
+          # Includes tests and code coverage.
+          path: |
+            pester-coverage-${{ matrix.info.platform }}.xml
+            pester-tests-${{ matrix.info.platform }}.xml
           if-no-files-found: warn
           retention-days: 0
           compression-level: 6

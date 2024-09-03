@@ -1,5 +1,5 @@
 BeforeAll {
-    . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+    # . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
     $script:foobar_fortune_content = @'
 foo
 %
@@ -16,7 +16,10 @@ l0l -- lma0 even.
     }
 }
 
-Describe 'Get-FortuneFromFile' {
+Describe 'Get-FortuneFromFile' -Tag "WindowsOnly", "MacosOnly" {
+    BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+    }
     It 'Gets Fortunes from file path' {
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $f = Get-FortuneFromFile -FortuneFile $path
@@ -36,7 +39,10 @@ Describe 'Get-FortuneFromFile' {
     }
 }
 
-Describe 'Get-FortuneFromFileCollection' {
+Describe 'Get-FortuneFromFileCollection' -Tag "WindowsOnly", "MacosOnly" {
+    BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+    }
     Context "TOML" {
         BeforeEach {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
@@ -120,8 +126,9 @@ example = [
     }
 }
 
-Describe 'Select-FortunesByLength' {
+Describe 'Select-FortunesByLength' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -166,8 +173,9 @@ Describe 'Select-FortunesByLength' {
     }
 }
 
-Describe 'Select-FortunesByPattern' {
+Describe 'Select-FortunesByPattern' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -185,8 +193,9 @@ Describe 'Select-FortunesByPattern' {
     }
 }
 
-Describe 'Show-Fortune' {
+Describe 'Show-Fortune' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -199,8 +208,9 @@ Describe 'Show-Fortune' {
         $fortune | Should -BeNullOrEmpty
     }
 }
-Describe 'Show-PossibleFortuneList' {
+Describe 'Show-PossibleFortuneList' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -214,8 +224,9 @@ Describe 'Show-PossibleFortuneList' {
     }
 }
 
-Describe 'Show-FortunePercentageByFile' {
+Describe 'Show-FortunePercentageByFile' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -235,7 +246,7 @@ Describe 'Show-FortunePercentageByFile' {
     }
 }
 
-Describe 'Fortune.ps1' {
+Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
     BeforeEach {
         $script:script_path = $PSCommandPath.Replace('.Tests.ps1', '.ps1')
     }
