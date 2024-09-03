@@ -93,7 +93,7 @@ jobs:
           $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.info.platform }}.xml"
           $pesterconfig.TestResult.Enabled = $true
           $pesterconfig.TestResult.OutputPath = "pester-tests-${{ matrix.info.platform }}.xml"
-          $pesterconfig.Filter.Tag = "${{ matrix.info.pestertag }}""
+          $pesterconfig.Filter.Tag = "${{ matrix.info.pestertag }}"
           Invoke-Pester -Configuration $pesterconfig
 
       # Upload the Pester results.
