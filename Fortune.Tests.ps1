@@ -37,6 +37,17 @@ Describe 'Get-FortuneFromFile' -Tag "WindowsOnly", "MacosOnly" {
             $Fortune.Path | Should -Be $path
         }
     }
+    It 'Remembers the Group' {
+        $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+        $f = Get-FortuneFromFile -FortuneFile $path
+        foreach ($fortune in $f ) {
+            $Fortune.Group | Should -BeNullOrEmpty
+        }
+        $f = Get-FortuneFromFile -FortuneFile $path -Group "default"
+        foreach ($fortune in $f ) {
+            $Fortune.Group | Should -Be "default"
+        }
+    }
 }
 
 Describe 'Get-FortuneFromFileCollection' -Tag "WindowsOnly", "MacosOnly" {

@@ -165,10 +165,13 @@ param(
   Converts a Fortune file to an array of Fortunes.
   .PARAMETER FortuneFile
   Path of Fortune file.
+  .PARAMETER Group
+  Group .
 #>
 function Get-FortuneFromFile {
     param(
-        [string]$FortuneFile
+        [string]$FortuneFile,
+        [string]$Group = $NULL
     )
     $fortunes_from_file = @()
     # Get each fortune file from path with wildcard.
@@ -181,6 +184,7 @@ function Get-FortuneFromFile {
             [PSCustomObject] @{
                 Fortune = $entry
                 Path    = $path.Fullname
+                Group   = $Group
             }
         }
     }
@@ -197,6 +201,7 @@ function Get-FortuneFromFile {
   Using System.Object class to support multiple config formats and how they are imported to PowerShell.
     TOML -> OrderedDictionary
     JSON -> PSCustomObject
+         -> OrderedHashtable -> Hashtable (Using -AsHashtable in PowerShell 7.3+)
     PDS1 -> Hashtable
   System.Object is the BaseType of the above Types.
 
@@ -209,7 +214,7 @@ function Get-FortuneFromFileCollection {
     $FilesInGroup = $ConfigObj.$Tag
     $fortunes_from_files = @()
     Foreach ($path in $FilesInGroup) {
-        $fortunes_from_files_buffer = Get-FortuneFromFile -FortuneFile $path
+        $fortunes_from_files_buffer = Get-FortuneFromFile -FortuneFile $path -Group $Tag
         $fortunes_from_files += $fortunes_from_files_buffer
     }
 
