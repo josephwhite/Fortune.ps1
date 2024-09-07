@@ -94,7 +94,11 @@ example = [
                 )
             }
             $content = $content | ConvertTo-Json -Depth 100
-            $script:cfg = ConvertFrom-Json $content
+            $cfg_buffer = ConvertFrom-Json $content
+            $cfg = @{}
+            $cfg_buffer | Get-Member -MemberType Properties | ForEach-Object {
+                $cfg.Add($_.Name, $cfg_buffer.($_.Name))
+            }
         }
         It 'Parses JSON with default group' {
             $f = Get-FortuneFromFileCollection -Tag "default" -ConfigObj $cfg
