@@ -385,12 +385,6 @@ function Show-FortunePercentageByFile {
 
 if ($Help) {
     Get-Help $PSCommandPath
-    Write-Output ""
-    $h1 = "
-  Run the following command for full documentation.
-    Get-Help $PSCommandPath -Full
-"
-    Write-Output $h1
     exit 0
 }
 

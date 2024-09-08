@@ -293,12 +293,7 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
     }
     Context 'Util' {
         It 'Outputs Get-Help' {
-            $script_gethelp_output = (Get-Help -Name $script_path 2>&1 | Out-String) + "
-  Run the following command for full documentation.
-    Get-Help $script_path -Full
-
-
-"
+            $script_gethelp_output = (Get-Help -Name $script_path 2>&1 | Out-String)
             $script_help_param_output = & $script_path -Help 2>&1 | Out-String
             $script_help_param_output | Should -Be $script_gethelp_output
         }
