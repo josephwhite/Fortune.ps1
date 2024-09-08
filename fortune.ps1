@@ -211,6 +211,11 @@ function Get-FortuneFromFile {
         [string]$Group = $NULL
     )
     $fortunes_from_file = @()
+    # Validation: File not a valid path
+    if (!(Test-Path($FortuneFile))) {
+        Write-Error -Message "Fortune file not found or invalid path." -Category ReadError
+        return $fortunes_from_file
+    }
     # Get each fortune file from path with wildcard.
     $FortuneFileItem = Get-Item -Path $FortuneFile
     Foreach ($path in $FortuneFileItem) {
