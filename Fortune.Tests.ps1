@@ -16,6 +16,32 @@ l0l -- lma0 even.
     }
 }
 
+Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
+    BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+    }
+    It 'Creates a Hashtable (TOML)' {
+        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml"), "TOML")
+        $cfg = $cfg_buffer.Data
+        $cfg | Should -BeOfType "System.Collections.Hashtable"
+    }
+    It 'Creates a Hashtable (JSON)' {
+        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.json"), "JSON")
+        $cfg = $cfg_buffer.Data
+        $cfg | Should -BeOfType "System.Collections.Hashtable"
+    }
+    It 'Creates a Hashtable (PSD1)' {
+        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1"), "PSD1")
+        $cfg = $cfg_buffer.Data
+        $cfg | Should -BeOfType "System.Collections.Hashtable"
+    }
+    It 'Needs a valid type' {
+        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml"), "TXT") 2>&1
+        $cfg = $cfg_buffer.Data
+        $cfg | Should -BeNullOrEmpty
+    }
+}
+
 Describe 'Get-FortuneFromFile' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
         . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
@@ -273,8 +299,13 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
 
 
 "
-            $script_help_output = & $script_path -Help 2>&1 | Out-String
-            $script_help_output | Should -Be $script_gethelp_output
+            $script_help_param_output = & $script_path -Help 2>&1 | Out-String
+            $script_help_param_output | Should -Be $script_gethelp_output
+        }
+        It 'Outputs Verbose Messaging' {
+            $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            [string[]]$script_output = & $script_path -File $path_wtxt -Match "LOL" -Verbose 4>&1
+            [string]$script_output[3] | Should -Be "0 fortune(s) matching pattern LOL"
         }
     }
     Context 'Logic' {
@@ -286,6 +317,11 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
     }
     Context 'Exit' {
         # Exit 0
+        It 'Returns Exit Code 0 for running with Help parameter' {
+            & $script_path -Help 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+        }
         It 'Returns Exit Code 0 for running successfully (File parameter)' {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             & $script_path -File $path_wtxt 2>&1
@@ -301,6 +337,67 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
         It 'Returns Exit Code 0 for running successfully (File+Percentage parameter)' {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             & $script_path -File $path_wtxt -Percentage 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+        }
+        It 'Returns Exit Code 0 for running successfully (Config parameter)' {
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            & $script_path -Config $path_toml 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            & $script_path -Config $path_json 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            & $script_path -Config $path_psd1 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+        }
+        It 'Returns Exit Code 0 for running successfully (Config+Group parameter)' {
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            & $script_path -Config $path_toml -Group "TV" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            & $script_path -Config $path_json -Group "TV" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            & $script_path -Config $path_psd1 -Group "TV" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+        }
+        It 'Returns Exit Code 0 for running successfully (Config+Match parameter)' {
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            & $script_path -Config $path_toml -Match "LOL" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            & $script_path -Config $path_json -Match "LOL" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            & $script_path -Config $path_psd1 -Match "LOL" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+        }
+        It 'Returns Exit Code 0 for running successfully (Config+Percentage parameter)' {
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            & $script_path -Config $path_toml -Percentage 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            & $script_path -Config $path_json -Percentage 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            & $script_path -Config $path_psd1 -Percentage 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+        }
+        It 'Returns Exit Code 0 for running with empty File, Group, and Config parameters' {
+            & $script_path -File "" -Group "" -Config "" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
         }

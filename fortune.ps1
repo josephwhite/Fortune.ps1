@@ -160,6 +160,43 @@ param(
     [switch]$Help
 )
 
+class FortuneConfig {
+    [System.IO.FileInfo]$Path
+    [ValidateSet("PSD1", "JSON", "TOML")]
+    [string]$Type
+    [System.Collections.Hashtable]$Data
+
+    FortuneConfig([System.IO.FileInfo]$Path, [string]$Type) {
+        switch ($Type) {
+            "TOML" {
+                $cfg_buffer = Get-Content -Path $Path | ConvertFrom-Toml
+                $this.Data = [hashtable]$cfg_buffer
+                $this.Type = $Type
+                $this.Path = $Path
+            }
+            "JSON" {
+                $cfg_buffer = Get-Content -Path $Path -Raw | ConvertFrom-Json
+                # Convert from PSCustomObject to Hashtable type
+                # Using this method to be compatible with PowerShell prior v7.3.0
+                $this.Data = @{}
+                $cfg_buffer | Get-Member -MemberType Properties | ForEach-Object {
+                    $this.Data.Add($_.Name, $cfg_buffer.($_.Name))
+                }
+                $this.Type = $Type
+                $this.Path = $Path
+            }
+            "PSD1" {
+                $this.Data = Import-PowerShellDataFile -Path $Path -SkipLimitCheck
+                $this.Type = $Type
+                $this.Path = $Path
+            }
+            default {
+                Write-Error -Message "Config file type not supported." -Category InvalidType
+            }
+        }
+    }
+}
+
 <#
     .SYNOPSIS
     Converts a Fortune file to an array of Fortunes.
@@ -408,20 +445,13 @@ if ($Group) {
     $config_file_ext = ((Get-Item $Config).Extension).ToUpper()
     switch ($config_file_ext) {
         ".TOML" {
-            $cfg = Get-Content -Path $Config | ConvertFrom-Toml
-            $cfg = [hashtable]$cfg
+            $cfg = ([FortuneConfig]::new($Config, "TOML")).Data
         }
         ".JSON" {
-            $cfg_buffer = Get-Content -Path $Config -Raw | ConvertFrom-Json
-            # Convert from PSCustomObject to Hashtable type
-            # Using this method to be compatible with PowerShell prior v7.3.0
-            $cfg = @{}
-            $cfg_buffer | Get-Member -MemberType Properties | ForEach-Object {
-                $cfg.Add($_.Name, $cfg_buffer.($_.Name))
-            }
+            $cfg = ([FortuneConfig]::new($Config, "JSON")).Data
         }
         ".PSD1" {
-            $cfg = Import-PowerShellDataFile -Path $Config -SkipLimitCheck
+            $cfg = ([FortuneConfig]::new($Config, "PSD1")).Data
         }
         default {
             Write-Error -Message "Config file type not supported." -Category InvalidType
