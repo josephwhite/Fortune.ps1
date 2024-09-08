@@ -21,17 +21,20 @@ Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
         . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
     }
     It 'Creates a Hashtable (TOML)' {
-        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml"), "TOML")
+        $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+        $cfg_buffer = [FortuneConfig]::new($path_toml, "TOML")
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
     It 'Creates a Hashtable (JSON)' {
-        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.json"), "JSON")
+        $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+        $cfg_buffer = [FortuneConfig]::new($path_json, "JSON")
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
     It 'Creates a Hashtable (PSD1)' {
-        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1"), "PSD1")
+        $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+        $cfg_buffer = [FortuneConfig]::new($path_psd1, "PSD1")
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
