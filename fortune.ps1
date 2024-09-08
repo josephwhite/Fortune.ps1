@@ -191,7 +191,6 @@ class FortuneConfig {
                 $this.Path = $Path
             }
             default {
-                Write-Error -Message "Config file type not supported." -Category InvalidType
             }
         }
     }
