@@ -90,8 +90,24 @@ jobs:
           Install-Module -Name PSToml -Force -Scope CurrentUser
 
       # Run Pester tests with Code Coverage
-      - name: Run Pester Tests
-        shell: ${{ matrix.info.shell }}
+      # Two different steps since shell parameter can't be ${{ matrix.info.shell }}
+      - name: Run Pester Tests - Pwsh
+        if: ${{ matrix.info.shell == 'pwsh' }}
+        shell: pwsh
+        run: |
+          $pesterconfig = New-PesterConfiguration
+          $pesterconfig.Run.Path = "."
+          $pesterconfig.CodeCoverage.Enabled = $true
+          $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.info.platform }}.xml"
+          $pesterconfig.CodeCoverage.CoveragePercentTarget = 75
+          $pesterconfig.TestResult.Enabled = $true
+          $pesterconfig.TestResult.OutputPath = "pester-tests-${{ matrix.info.platform }}.xml"
+          $pesterconfig.Filter.Tag = "${{ matrix.info.pestertag }}"
+          Invoke-Pester -Configuration $pesterconfig
+
+      - name: Run Pester Tests - Windows PowerShell
+        if: ${{ matrix.info.shell == 'powershell' }}
+        shell: powershell
         run: |
           $pesterconfig = New-PesterConfiguration
           $pesterconfig.Run.Path = "."
