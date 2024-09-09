@@ -44,8 +44,13 @@ jobs:
           info:
             - platform: "windows-latest"
               pestertag: "WindowsOnly"
+              shell: "powershell"
+            - platform: "windows-latest"
+              pestertag: "WindowsOnly"
+              shell: "pwsh"
             - platform: "macos-latest"
               pestertag: "MacosOnly"
+              shell: "pwsh"
 
             #platform: [windows-latest, macos-latest, ubuntu-latest]
 
@@ -78,14 +83,15 @@ jobs:
       # - Pester (https://github.com/pester/Pester)
       # - PSToml (https://github.com/jborean93/PSToml)
       - name: Install Pester and PSToml
-        shell: pwsh
+        shell: ${{ matrix.info.shell }}
         run: |
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Pester -Force -Scope CurrentUser
           Install-Module -Name PSToml -Force -Scope CurrentUser
 
       # Run Pester tests with Code Coverage
       - name: Run Pester Tests
-        shell: pwsh
+        shell: ${{ matrix.info.shell }}
         run: |
           $pesterconfig = New-PesterConfiguration
           $pesterconfig.Run.Path = "."
@@ -102,7 +108,7 @@ jobs:
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: pester-report-${{ matrix.info.platform }}
+          name: pester-report-${{ matrix.info.shell }}-${{ matrix.info.platform }}
           # Includes tests and code coverage.
           path: |
             pester-coverage-${{ matrix.info.platform }}.xml

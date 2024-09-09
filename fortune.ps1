@@ -186,7 +186,13 @@ class FortuneConfig {
                 $this.Path = $Path
             }
             "PSD1" {
-                $this.Data = Import-PowerShellDataFile -Path $Path -SkipLimitCheck
+                # Use -SkipLimitCheck if available (<= PowerShell v7.2)
+                if ((Get-Variable PSVersionTable -ValueOnly).PSVersion -ge [version]7.2) {
+                    $this.Data = Import-PowerShellDataFile -Path $Path -SkipLimitCheck
+                }
+                else {
+                    $this.Data = Import-PowerShellDataFile -Path $Path
+                }
                 $this.Type = $Type
                 $this.Path = $Path
             }
@@ -340,6 +346,10 @@ function Show-Fortune {
     param(
         [PSCustomObject[]]$Fortunes
     )
+    # Validation: No fortunes for Get-Random (<= PowerShell v5.1)
+    if ($Fortunes.Count -lt 1) {
+        return
+    }
     $final_fortune = $Fortunes | Get-Random
     Write-Output $final_fortune.Fortune
 

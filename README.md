@@ -2,6 +2,9 @@
 
 A PowerShell implementation of the [unix `fortune` program](https://www.wikipedia.org/wiki/Fortune_(Unix)). This project aims to implement many features from the original C program with new ideas for more flexibility. Flags `-a` and `-o` from the original have been replaced by an approach using arrays of filepaths from config files. This allows not only more specific groupings to seperate fortune files, but also allows fortune files to be independent from a single directory.
 
+### Teapot Status
+[![PSScriptAnalyzer](https://github.com/josephwhite/Fortune.ps1/actions/workflows/powershell.yml/badge.svg)](https://github.com/josephwhite/Fortune.ps1/actions/workflows/powershell.yml)
+
 ## Features
 
 - Optional config based quote pooling.
