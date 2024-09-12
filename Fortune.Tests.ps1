@@ -320,6 +320,11 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
         }
+        It 'Returns Exit Code 0 for running with Version parameter' {
+            & $script_path -Version 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+        }
         It 'Returns Exit Code 0 for running successfully (File parameter)' {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             & $script_path -File $path_wtxt 2>&1

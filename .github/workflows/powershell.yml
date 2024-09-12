@@ -39,6 +39,7 @@ jobs:
     # Run on multiple operating systems
     #   platform  = Operating System for Github Action (https://github.com/actions/runner-images)
     #   pestertag = Pester Tag for platform specific testing (https://pester.dev/docs/usage/tags)
+    #   shell     = PowerShell executable (Windows PowerShell vs Powershell v6+)
     strategy:
       matrix:
           info:
@@ -61,7 +62,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Scan code.
+      # Scan code (Pwsh)
       # Installs the following modules for PowerShell
       # - PSScriptAnalyzer (https://github.com/PowerShell/PSScriptAnalyzer)
       # - ConvertToSARIF (https://github.com/microsoft/ConvertToSARIF)
@@ -78,7 +79,9 @@ jobs:
         with:
           sarif_file: psscriptanalyzer-results.sarif
 
-      # Test code.
+      # Test code
+      # Two different paths since shell parameter can't be ${{ matrix.info.shell }}
+
       # Installs the following modules for PowerShell
       # - Pester (https://github.com/pester/Pester)
       # - PSToml (https://github.com/jborean93/PSToml)

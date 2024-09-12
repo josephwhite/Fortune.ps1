@@ -68,7 +68,7 @@
     See: https://proofwiki.org/wiki/Definition:Positive/Real_Number
     .PARAMETER Match
     Filter and prints fortunes matching a given REGEX pattern.
-    Each fortune will be seperated by a single %.
+    Each fortune will be separated by a single %.
     .PARAMETER Percentage
     Prints an array of fortune filepaths, thier percentages, and terminates if present.
     .PARAMETER Help
@@ -103,14 +103,17 @@
     fortune.ps1 -Percentage -Group Foo
     fortune.ps1 -p -File 'C:\foorbar\fortunes\*'
     .EXAMPLE
+    Print version and exit.
+    fortune.ps1 -Version
+    fortune.ps1 -v
+    .EXAMPLE
+    Print help and exit.
     fortune.ps1 -Help
     fortune.ps1 -h
     .EXAMPLE
     Verbose messaging is available.
     fortune.ps1 -Verbose
     .NOTES
-    Version
-        1.0.0
     Dependencies
         - PSToml
             - Needed to parse TOML files.
@@ -154,6 +157,10 @@ param(
     [Parameter()]
     [Alias("p")]
     [switch]$Percentage,
+
+    [Parameter()]
+    [Alias("v")]
+    [switch]$Version,
 
     [Parameter()]
     [Alias("h")]
@@ -398,6 +405,12 @@ function Show-FortunePercentageByFile {
 
 if ($Help) {
     Get-Help $PSCommandPath
+    exit 0
+}
+
+if ($Version) {
+    $program_version = ([version]::new(1, 0, 1)).toString()
+    Write-Output $program_version
     exit 0
 }
 

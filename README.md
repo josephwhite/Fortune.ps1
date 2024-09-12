@@ -4,6 +4,7 @@ A PowerShell implementation of the [unix `fortune` program](https://www.wikipedi
 
 ### Teapot Status
 [![PSScriptAnalyzer](https://github.com/josephwhite/Fortune.ps1/actions/workflows/powershell.yml/badge.svg)](https://github.com/josephwhite/Fortune.ps1/actions/workflows/powershell.yml)
+![Static Badge](https://img.shields.io/badge/LICENSE-AGPL_3.0_only-blue)
 
 ## Features
 
@@ -34,21 +35,16 @@ TV = [
 Please read the `Get-Help` for example calls and in-depth parameter descriptions.
 | Flag         | Action                                                          |
 |:-------------|:----------------------------------------------------------------|
+| PRIMARY                                                                        |
 | -f [path]    | Filepath of Fortune file(s) to pool quotes from.                |
 | -c [path]    | Config filepath. Should contain groupings of fortune filepaths. Default is current directory + "\fortune_config.psd1" |
 | -g [foo]     | Group to pool from within config file. Default is "default".    |
-|              |                                                                 |
+| SECONDARY                                                                      |
 | -l [#]       | Only use quotes than the length specified.                      |
 | -s [#]       | Only use quotes shorter than the length specified.              |
 | -n [#]       | Only use quotes that are exactly the length given.              |
 | -m [pattern] | Print all quotes matching the regex pattern given.              |
 | -p           | Print filepaths of Fortune files and percentages.               |
-
-
-## TODO
-
-- Some type of CI/CD.
-	- Install Modules.
-	- Test Cases.
-	- Windows and Linux Support.
-- Add YAML config support when PowerShell officially supports YAML parsers.
+| UTILITY                                                                        |
+| -v           | Print version info and exit.                                    |
+| -h           | Print help info and exit.                                       |
