@@ -71,6 +71,10 @@
     Each fortune will be separated by a single %.
     .PARAMETER Percentage
     Prints an array of fortune filepaths, thier percentages, and terminates if present.
+    .PARAMETER Wait
+    Waits before exiting after printing single fortune.
+    .PARAMETER Version
+    Prints version and terminates if present.
     .PARAMETER Help
     Prints Full Get-Help output and terminates if present.
     .EXAMPLE
@@ -117,7 +121,9 @@
     Dependencies
         - PSToml
             - Needed to parse TOML files.
-            - https://www.powershellgallery.com/packages/PSToml/
+            - Github: https://github.com/jborean93/PSToml
+            - PowerShell Gallery: https://www.powershellgallery.com/packages/PSToml/
+            - Version info
                 - v0.3.0+ supports PowerShell v5.1+
                 - v0.2.0 supports PowerShell v7.2+ (not recommended)
 #>
@@ -157,6 +163,10 @@ param(
     [Parameter()]
     [Alias("p")]
     [switch]$Percentage,
+
+    [Parameter()]
+    [Alias("w")]
+    [switch]$Wait,
 
     [Parameter()]
     [Alias("v")]
@@ -403,13 +413,38 @@ function Show-FortunePercentageByFile {
     $unique_paths
 }
 
+<#
+    .SYNOPSIS
+    Calculate the time needed to read a fortune in seconds.
+    .PARAMETER Length
+    Length of fortune.
+    .PARAMETER Min
+    Minimum time to wait.
+#>
+function Get-FortuneReadoutTime {
+    param(
+        [int]$Length = 0,
+        [int]$Min = 6
+    )
+    # Validation: Inputs are positive integers
+    if ($Length -lt 0) {
+        $Length = 0
+    }
+    if ($Min -lt 0) {
+        $Min = 0
+    }
+    $sleep_calc_time = ($Length / 20)
+    $sleep_time = if ($sleep_calc_time -gt $Min) { $sleep_calc_time } else { $Min }
+    return $sleep_time
+}
+
 if ($Help) {
     Get-Help $PSCommandPath
     exit 0
 }
 
 if ($Version) {
-    $program_version = ([version]::new(1, 0, 1)).toString()
+    $program_version = ([version]::new(1, 0, 2)).toString()
     Write-Output $program_version
     exit 0
 }
@@ -450,7 +485,13 @@ if ($File) {
         exit 0
     }
 
-    Show-Fortune -Fortunes $f
+    $fortune_output = Show-Fortune -Fortunes $f
+    Write-Output $fortune_output
+
+    if ($Wait) {
+        $wait_time = Get-FortuneReadoutTime -Length $fortune_output.Length -Min 6
+        Start-Sleep -Seconds $wait_time
+    }
 
     exit 0
 }
@@ -495,7 +536,13 @@ if ($Group) {
         exit 0
     }
 
-    Show-Fortune -Fortunes $f
+    $fortune_output = Show-Fortune -Fortunes $f
+    Write-Output $fortune_output
+
+    if ($Wait) {
+        $wait_time = Get-FortuneReadoutTime -Length $fortune_output.Length -Min 6
+        Start-Sleep -Seconds $wait_time
+    }
 
     exit 0
 }

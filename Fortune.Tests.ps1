@@ -45,6 +45,24 @@ Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
     }
 }
 
+Describe 'Get-FortuneReadoutTime' -Tag "WindowsOnly", "MacosOnly" {
+    BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+    }
+    It 'Uses Length' {
+        $wait_time = Get-FortuneReadoutTime -Length 200
+        $wait_time | Should -Be 10
+    }
+    It 'Deafults to the minimum if length is too short' {
+        $wait_time = Get-FortuneReadoutTime -Length 1 -Min 6
+        $wait_time | Should -Be 6
+    }
+    It 'Defaults to 0 if inputs are negative' {
+        $wait_time = Get-FortuneReadoutTime -Length -10 -Min -9
+        $wait_time | Should -Be 0
+    }
+}
+
 Describe 'Get-FortuneFromFile' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
         . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
