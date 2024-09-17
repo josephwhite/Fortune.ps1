@@ -55,17 +55,20 @@
     Default value is "default"
     .PARAMETER Long
     Filter for fortunes that are longer than the given character length if present.
-    Should be a positive real number.
-    See: https://proofwiki.org/wiki/Definition:Positive/Real_Number
+    Should be a positive integer.
+    See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER Short
     Filter for fortunes that are shorter than the given character length if present.
-    Should be a positive real number.
-    See: https://proofwiki.org/wiki/Definition:Positive/Real_Number
+    Should be a positive integer.
+    See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER Length
     Filter for fortunes with the given character length if present.
     Takes priority over Long and Short flags.
-    Should be a positive real number.
-    See: https://proofwiki.org/wiki/Definition:Positive/Real_Number
+    Should be a positive integer.
+    See: https://proofwiki.org/wiki/Definition:Positive/Integer
+    .PARAMETER Equidistribution
+    Give each fortune file found an equal probability of having their fortune being printed.
+    Replaces being relative to the entries of each file.
     .PARAMETER Match
     Filter and prints fortunes matching a given REGEX pattern.
     Each fortune will be separated by a single %.
@@ -89,6 +92,10 @@
     .EXAMPLE
     fortune.ps1 -g 'TV' -c 'C:\foobar\cfg\fortune_config.json'
     .EXAMPLE
+    Make the probability of choosing a fortune file equal to that of all other files.
+    fortune.ps1 -File 'C:\foorbar\fortunes\*' -Equidistribution
+    fortune.ps1 -Group 'TV' -Equidistribution
+    .EXAMPLE
     Filter for fortunes that are between 20-50 characters long.
     fortune.ps1 -Long 20 -Short 50
     fortune.ps1 -l 20 -s 50
@@ -106,6 +113,11 @@
     fortune.ps1 -Percentage
     fortune.ps1 -Percentage -Group Foo
     fortune.ps1 -p -File 'C:\foorbar\fortunes\*'
+
+    Equally distribute percentages.
+    fortune.ps1 -Percentage -Group Foo -Equidistribution
+    .EXAMPLE
+    fortune.ps1 -Wait
     .EXAMPLE
     Print version and exit.
     fortune.ps1 -Version
@@ -154,6 +166,10 @@ param(
     [Parameter()]
     [Alias("ls", "n")]
     [int]$Length,
+
+    [Parameter()]
+    [Alias("e")]
+    [switch]$Equidistribution,
 
     [Parameter()]
     [Alias("m", "regex")]
@@ -333,7 +349,7 @@ function Select-FortunesByLength {
     .PARAMETER Fortunes
     Array of Fortunes to filter.
     .PARAMETER Pattern
-    Filter and prints fortunes matching a given REGEX pattern.
+    Filter fortunes matching a given REGEX pattern.
 #>
 function Select-FortunesByPattern {
     param(
@@ -350,6 +366,27 @@ function Select-FortunesByPattern {
     $fortune_vmes = "{0} to {1} fortune(s) after pattern filter." -f $fortune_count_before, $fortune_count_after
     Write-Verbose -Message ($fortune_vmes)
 
+    return $fortunes
+}
+
+<#
+    .SYNOPSIS
+    Filter an array of Fortunes by Path.
+    .PARAMETER Fortunes
+    Array of Fortunes to filter.
+    .PARAMETER Path
+    Filter fortunes with a given Path value.
+#>
+function Select-FortunesByPath {
+    param(
+        [PSCustomObject[]]$Fortunes,
+        [string]$Path
+    )
+    if ($Path) {
+        $Fortunes = $Fortunes | Where-Object {
+            $_.Path -eq $Path
+        }
+    }
     return $fortunes
 }
 
@@ -396,10 +433,13 @@ function Show-PossibleFortuneList {
     Output the unique Fortune Filepaths and the chance a Fortune would be picked from each file.
     .PARAMETER Fortunes
     Array of Fortunes.
+    .PARAMETER Equal
+    Set the chance for each file to be equal.
 #>
 function Show-FortunePercentageByFile {
     param(
-        [PSCustomObject[]]$Fortunes
+        [PSCustomObject[]]$Fortunes,
+        [boolean]$Equal
     )
     $total_count = $Fortunes.Count
     # Aggregate the unique Fortune Files
@@ -408,7 +448,8 @@ function Show-FortunePercentageByFile {
     $unique_paths | Add-Member -NotePropertyName Percentage -NotePropertyValue 0.0
     foreach ($path in $unique_paths) {
         $subsection = $Fortunes | Where-Object { $_.Path -eq $path.Path; }
-        $path.Percentage = [double]($subsection.Count / $total_count) * 100
+        #$path.Percentage = [double](($subsection.Count / $total_count) * 100)
+        $path.Percentage = if ($Equal) { [double]((1 / $unique_paths.Count) * 100) } else { [double](($subsection.Count / $total_count) * 100) }
     }
     $unique_paths
 }
@@ -426,7 +467,7 @@ function Get-FortuneReadoutTime {
         [int]$Length = 0,
         [int]$Min = 6
     )
-    # Validation: Inputs are positive integers
+    # Validation: Inputs are positive integers.
     if ($Length -lt 0) {
         $Length = 0
     }
@@ -444,7 +485,7 @@ if ($Help) {
 }
 
 if ($Version) {
-    $program_version = ([version]::new(1, 0, 2)).toString()
+    $program_version = ([version]::new(1, 0, 3)).toString()
     Write-Output $program_version
     exit 0
 }
@@ -473,7 +514,7 @@ if ($File) {
     $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match
 
     if ($Percentage) {
-        Show-FortunePercentageByFile -Fortunes $f
+        Show-FortunePercentageByFile -Fortunes $f -Equal $Equidistribution
         exit 0
     }
 
@@ -483,6 +524,12 @@ if ($File) {
         $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match
         Write-Verbose -Message ($fortune_vmes)
         exit 0
+    }
+
+    $unique_paths = $f | Sort-Object -Unique -Property Path | Select-Object -Property Path
+    if (($unique_paths.Count -gt 0) -and ($Equidistribution)) {
+        [string]$rand_file = $unique_paths.Path | Get-Random
+        $f = Select-FortunesByPath -Fortunes $f -Path $rand_file
     }
 
     $fortune_output = Show-Fortune -Fortunes $f
@@ -524,7 +571,7 @@ if ($Group) {
     $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match
 
     if ($Percentage) {
-        Show-FortunePercentageByFile -Fortunes $f
+        Show-FortunePercentageByFile -Fortunes $f -Equal $Equidistribution
         exit 0
     }
 
@@ -534,6 +581,12 @@ if ($Group) {
         $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match
         Write-Verbose -Message ($fortune_vmes)
         exit 0
+    }
+
+    $unique_paths = $f | Sort-Object -Unique -Property Path | Select-Object -Property Path
+    if (($unique_paths.Count -gt 0) -and ($Equidistribution)) {
+        [string]$rand_file = $unique_paths.Path | Get-Random
+        $f = Select-FortunesByPath -Fortunes $f -Path $rand_file
     }
 
     $fortune_output = Show-Fortune -Fortunes $f
