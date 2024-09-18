@@ -45,6 +45,7 @@ Please read the `Get-Help` for example calls and in-depth parameter descriptions
 | -n [#]       | Only use quotes that are exactly the length given.              |
 | -m [pattern] | Print all quotes matching the regex pattern given.              |
 | -p           | Print filepaths of Fortune files and percentages.               |
+| -e           | Distribute equal probability among the selected Fortune files.  |
 | -w           | Waits before exiting after printing single fortune.             |
 | UTILITY                                                                        |
 | -v           | Print version info and exit.                                    |

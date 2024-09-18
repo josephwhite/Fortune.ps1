@@ -12,6 +12,7 @@ l0l -- lma0 even.
         [PSCustomObject] @{
             Fortune = $entry
             Path    = "C:\foo\fortunes.txt"
+            Group   = "FOO"
         }
     }
 }
@@ -254,6 +255,24 @@ Describe 'Select-FortunesByPattern' -Tag "WindowsOnly", "MacosOnly" {
         }
     }
 }
+
+Describe 'Select-FortunesByPath' -Tag "WindowsOnly", "MacosOnly" {
+    BeforeEach {
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+        $script:f = Get-FortuneFromFile -FortuneFile $path
+    }
+    It 'Filters with Path property' {
+        $junk = Get-FortuneFromFile -FortuneFile $path
+        foreach ($j in $junk) { $j.Path = "LOL" }
+        $f += $junk
+        $f = Select-FortunesByPath -Fortunes $f -Path $path
+        foreach ($fortune in $f.Fortune) {
+            $Fortune | Should -Match $path
+        }
+    }
+}
+
 
 Describe 'Show-Fortune' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {

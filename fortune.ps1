@@ -383,6 +383,7 @@ function Select-FortunesByPath {
         [string]$Path
     )
     if ($Path) {
+        $Path = [regex]::escape($Path)
         $Fortunes = $Fortunes | Where-Object {
             $_.Path -eq $Path
         }
