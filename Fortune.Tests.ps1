@@ -27,6 +27,12 @@ Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
+    It 'Creates a Hashtable (YAML)' {
+        $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+        $cfg_buffer = [FortuneConfig]::new($path_yaml, "YAML")
+        $cfg = $cfg_buffer.Data
+        $cfg | Should -BeOfType "System.Collections.Hashtable"
+    }
     It 'Creates a Hashtable (JSON)' {
         $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
         $cfg_buffer = [FortuneConfig]::new($path_json, "JSON")
@@ -115,6 +121,31 @@ example = [
 ]
 '@ -f $path_wild, $path_wtxt
             $script:cfg = $content | ConvertFrom-Toml
+        }
+        It 'Parses TOML with default group' {
+            $f = Get-FortuneFromFileCollection -Tag "default" -ConfigObj $cfg
+            foreach ($fortune in $f ) {
+                $Fortune.Path | Should -Be $path_wtxt
+            }
+        }
+        It 'Parses TOML with custom group' {
+            $f = Get-FortuneFromFileCollection -Tag "example" -ConfigObj $cfg
+            foreach ($fortune in $f ) {
+                $Fortune.Path | Should -Be $path_wtxt
+            }
+        }
+    }
+    Context "YAML" {
+        BeforeEach {
+            $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            $path_wild = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "*")
+            $content = @'
+default:
+    - '{0}'
+example:
+    - '{1}'
+'@ -f $path_wild, $path_wtxt
+            $script:cfg = $content | ConvertFrom-Yaml
         }
         It 'Parses TOML with default group' {
             $f = Get-FortuneFromFileCollection -Tag "default" -ConfigObj $cfg
@@ -399,6 +430,10 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
             & $script_path -Config $path_toml -Group "TV" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
+            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+            & $script_path -Config $path_yaml -Group "TV" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
             $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
             & $script_path -Config $path_json -Group "TV" 2>&1
             [int]$lec = $LASTEXITCODE
@@ -413,6 +448,10 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
             & $script_path -Config $path_toml -Match "LOL" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
+            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+            & $script_path -Config $path_yaml -Match "LOL" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
             $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
             & $script_path -Config $path_json -Match "LOL" 2>&1
             [int]$lec = $LASTEXITCODE
@@ -425,6 +464,10 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
         It 'Returns Exit Code 0 for running successfully (Config+Percentage parameter)' {
             $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
             & $script_path -Config $path_toml -Percentage 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+            & $script_path -Config $path_yaml -Percentage 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
             $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")

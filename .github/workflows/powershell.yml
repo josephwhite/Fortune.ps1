@@ -85,6 +85,7 @@ jobs:
       # Installs the following modules for PowerShell
       # - Pester (https://github.com/pester/Pester)
       # - PSToml (https://github.com/jborean93/PSToml)
+      # - powershell-yaml (https://github.com/cloudbase/powershell-yaml)
       - name: Install Pester and PSToml - Pwsh
         if: ${{ matrix.info.shell == 'pwsh' }}
         shell: pwsh
@@ -92,6 +93,7 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Pester -Force -Scope CurrentUser
           Install-Module -Name PSToml -Force -Scope CurrentUser
+          Install-Module -Name powershell-yaml -Force -Scope CurrentUser
 
       - name: Install Pester and PSToml - Windows PowerShell
         if: ${{ matrix.info.shell == 'powershell' }}
@@ -100,6 +102,7 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Pester -Force -Scope CurrentUser
           Install-Module -Name PSToml -Force -Scope CurrentUser
+          Install-Module -Name powershell-yaml -Force -Scope CurrentUser
 
       # Run Pester tests with Code Coverage
       # Two different steps since shell parameter can't be ${{ matrix.info.shell }}

@@ -11,11 +11,9 @@ A PowerShell implementation of the [unix `fortune` program](https://www.wikipedi
 - Optional config based quote pooling.
 	-  Directory independent.
 	-  Arrays of filepaths.
-	-  Supports JSON, PSD1, and TOML.
+	-  Supports JSON, PSD1, TOML, and YAML.
 - Length and Pattern parameters.
 - Comment-based help for `Get-Help` parsing.
-
-Usage of a TOML config file requires [PSTOML](https://github.com/jborean93/PSToml) and PowerShell v5.1+.
 
 Example of config.toml
 ```toml
@@ -50,3 +48,7 @@ Please read the `Get-Help` for example calls and in-depth parameter descriptions
 | UTILITY                                                                        |
 | -v           | Print version info and exit.                                    |
 | -h           | Print help info and exit.                                       |
+
+## Dependencies
+- Usage of a TOML config file requires [PSToml](https://github.com/jborean93/PSToml) and PowerShell v5.1+.
+- Usage of a YAML config file requires [powershell-yaml](https://github.com/cloudbase/powershell-yaml).
