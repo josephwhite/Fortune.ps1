@@ -10,6 +10,7 @@
     Accepted configuration file formats:
     - JSON (JavaScript Object Notation)
     - TOML (Tom's Obvious, Minimal Language)
+    - YAML (Yet Another Markup Language / YAML Ain't Markup Language)
     - PSD1 (PowerShell data file)
 
     If absent and using the Group flag (-Group, -g), config will be checked for in ($PSScriptRoot + "\fortune_config.psd1").
@@ -49,6 +50,14 @@
           "C:\foobar\fortunes\breakingbad.txt"
         )
       }
+    ```
+    Example format of fortune_config.yaml
+    ```yaml
+    default:
+        - 'C:\foobar\fortunes\*'
+    TV:
+        - "C:\foobar\fortunes\xfiles"
+        - "C:\foobar\fortunes\breakingbad.txt"
     ```
     .PARAMETER Group
     Group of filepaths to pool fortunes from.
@@ -138,6 +147,10 @@
             - Version info
                 - v0.3.0+ supports PowerShell v5.1+
                 - v0.2.0 supports PowerShell v7.2+ (not recommended)
+        - powershell-yaml
+            - Needed to parse YAML files.
+            - Github: https://github.com/cloudbase/powershell-yaml
+            - PowerShell Gallery: https://www.powershellgallery.com/packages/powershell-yaml/
 #>
 param(
     [Parameter()]
@@ -195,7 +208,7 @@ param(
 
 class FortuneConfig {
     [System.IO.FileInfo]$Path
-    [ValidateSet("PSD1", "JSON", "TOML")]
+    [ValidateSet("PSD1", "JSON", "TOML", "YAML")]
     [string]$Type
     [System.Collections.Hashtable]$Data
 
@@ -207,10 +220,16 @@ class FortuneConfig {
                 $this.Type = $Type
                 $this.Path = $Path
             }
+            "YAML" {
+                $this.Data = Get-Content -Path $Path | ConvertFrom-Yaml
+                $this.Type = $Type
+                $this.Path = $Path
+            }
             "JSON" {
                 $cfg_buffer = Get-Content -Path $Path -Raw | ConvertFrom-Json
                 # Convert from PSCustomObject to Hashtable type
                 # Using this method to be compatible with PowerShell prior v7.3.0
+                # https://stackoverflow.com/a/32102005
                 $this.Data = @{}
                 $cfg_buffer | Get-Member -MemberType Properties | ForEach-Object {
                     $this.Data.Add($_.Name, $cfg_buffer.($_.Name))
@@ -278,12 +297,6 @@ function Get-FortuneFromFile {
     .PARAMETER ConfigObj
     Object representation of Config file to pull Tag from.
     Previously used System.Object type to support multiple config formats and how they are imported to PowerShell.
-        TOML -> OrderedDictionary
-             -> OrderedDictionary -> Hashtable (https://stackoverflow.com/a/48679838)
-        JSON -> PSCustomObject
-             -> OrderedHashtable -> Hashtable (Using -AsHashtable in PowerShell v7.3.0-preview.6+)
-             -> PSCustomObject -> Hashtable (https://stackoverflow.com/a/32102005)
-        PDS1 -> Hashtable
     System.Object is the BaseType of Hashtable, OrderedDictionary, and PSCustomObject.
 #>
 function Get-FortuneFromFileCollection {
@@ -486,7 +499,7 @@ if ($Help) {
 }
 
 if ($Version) {
-    $program_version = ([version]::new(1, 0, 3)).toString()
+    $program_version = ([version]::new(1, 0, 4)).toString()
     Write-Output $program_version
     exit 0
 }
@@ -553,13 +566,16 @@ if ($Group) {
     # Get data from config file.
     $config_file_ext = ((Get-Item $Config).Extension).ToUpper()
     switch ($config_file_ext) {
-        ".TOML" {
+        { $_ -in ".TOML" } {
             $cfg = ([FortuneConfig]::new($Config, "TOML")).Data
         }
-        ".JSON" {
+        { $_ -in ".YAML", ".YML" } {
+            $cfg = ([FortuneConfig]::new($Config, "YAML")).Data
+        }
+        { $_ -in ".JSON" } {
             $cfg = ([FortuneConfig]::new($Config, "JSON")).Data
         }
-        ".PSD1" {
+        { $_ -in ".PSD1" } {
             $cfg = ([FortuneConfig]::new($Config, "PSD1")).Data
         }
         default {
