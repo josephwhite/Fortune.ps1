@@ -147,13 +147,13 @@ example:
 '@ -f $path_wild, $path_wtxt
             $script:cfg = $content | ConvertFrom-Yaml
         }
-        It 'Parses TOML with default group' {
+        It 'Parses YAML with default group' {
             $f = Get-FortuneFromFileCollection -Tag "default" -ConfigObj $cfg
             foreach ($fortune in $f ) {
                 $Fortune.Path | Should -Be $path_wtxt
             }
         }
-        It 'Parses TOML with custom group' {
+        It 'Parses YAML with custom group' {
             $f = Get-FortuneFromFileCollection -Tag "example" -ConfigObj $cfg
             foreach ($fortune in $f ) {
                 $Fortune.Path | Should -Be $path_wtxt
