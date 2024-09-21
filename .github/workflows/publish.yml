@@ -13,7 +13,7 @@ jobs:
     steps:
       # Checkout repo
       - name: Checkout
-      - uses: actions/checkout@v4
+        uses: actions/checkout@v4
 
       # Publish on Github Release
       - name: Publish PowerShell Script
