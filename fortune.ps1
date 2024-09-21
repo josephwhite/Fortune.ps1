@@ -1,6 +1,17 @@
+<#PSScriptInfo
+
+.VERSION 1.0.4
+
+.GUID 0e2718fa-6a3f-426d-9378-beed592e39ff
+
+.AUTHOR isthisfieldimportant
+
+#>
 <#
     .SYNOPSIS
     PowerShell implementation of the Fortune program.
+    .DESCRIPTION
+    Fortune for PowerShell that includes flexible file selecting, config support, and various parameters from the original Fortune.
     .PARAMETER File
     Filepath of fortune file(s) to pool from when not using a group and config file. Wildcards are supported.
     Takes priority over Group flag.
