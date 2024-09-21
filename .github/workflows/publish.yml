@@ -17,7 +17,7 @@ jobs:
 
       # Publish on Github Release
       - name: Publish PowerShell Script
-        uses: natescherer/publish-powershell-action@v1
+        uses: natescherer/publish-powershell-action@v1.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: packages
