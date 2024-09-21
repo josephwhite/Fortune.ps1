@@ -56,8 +56,8 @@
     default:
         - 'C:\foobar\fortunes\*'
     TV:
-        - "C:\foobar\fortunes\xfiles"
-        - "C:\foobar\fortunes\breakingbad.txt"
+        - 'C:\foobar\fortunes\xfiles'
+        - 'C:\foobar\fortunes\breakingbad.txt'
     ```
     .PARAMETER Group
     Group of filepaths to pool fortunes from.
@@ -166,7 +166,7 @@ param(
     [Parameter()]
     [Alias("c")]
     [AllowEmptyString()]
-    [string]$Config = $PSScriptRoot + "\fortune_config.psd1",
+    [string]$Config = $PSScriptRoot + '\fortune_config.psd1',
 
     [Parameter()]
     [Alias("l")]

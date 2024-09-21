@@ -1,0 +1,17 @@
+name: Publish
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    name: GithubPackage
+    runs-on: windows-latest
+    steps:
+      - name: Publish PowerShell Script
+        uses: natescherer/publish-powershell-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target: packages
+          path: fortune.ps1
