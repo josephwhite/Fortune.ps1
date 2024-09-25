@@ -22,25 +22,25 @@ Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
         . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
     }
     It 'Creates a Hashtable (TOML)' {
-        $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+        $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.toml")
         $cfg_buffer = [FortuneConfig]::new($path_toml, "TOML")
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
     It 'Creates a Hashtable (YAML)' {
-        $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+        $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.yml")
         $cfg_buffer = [FortuneConfig]::new($path_yaml, "YAML")
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
     It 'Creates a Hashtable (JSON)' {
-        $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+        $path_json = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.json")
         $cfg_buffer = [FortuneConfig]::new($path_json, "JSON")
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
     It 'Creates a Hashtable (PSD1)' {
-        $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+        $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.psd1")
         $cfg_buffer = [FortuneConfig]::new($path_psd1, "PSD1")
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
@@ -412,69 +412,69 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
             $lec | Should -Be 0
         }
         It 'Returns Exit Code 0 for running successfully (Config parameter)' {
-            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.toml")
             & $script_path -Config $path_toml 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.json")
             & $script_path -Config $path_json 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.psd1")
             & $script_path -Config $path_psd1 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
         }
         It 'Returns Exit Code 0 for running successfully (Config+Group parameter)' {
-            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.toml")
             & $script_path -Config $path_toml -Group "TV" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.yml")
             & $script_path -Config $path_yaml -Group "TV" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.json")
             & $script_path -Config $path_json -Group "TV" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.psd1")
             & $script_path -Config $path_psd1 -Group "TV" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
         }
         It 'Returns Exit Code 0 for running successfully (Config+Match parameter)' {
-            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.toml")
             & $script_path -Config $path_toml -Match "LOL" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.yml")
             & $script_path -Config $path_yaml -Match "LOL" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.json")
             & $script_path -Config $path_json -Match "LOL" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.psd1")
             & $script_path -Config $path_psd1 -Match "LOL" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
         }
         It 'Returns Exit Code 0 for running successfully (Config+Percentage parameter)' {
-            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")
+            $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.toml")
             & $script_path -Config $path_toml -Percentage 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "example_config.yml")
+            $path_yaml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.yml")
             & $script_path -Config $path_yaml -Percentage 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "example_config.json")
+            $path_json = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.json")
             & $script_path -Config $path_json -Percentage 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
-            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "example_config.psd1")
+            $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.psd1")
             & $script_path -Config $path_psd1 -Percentage 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
