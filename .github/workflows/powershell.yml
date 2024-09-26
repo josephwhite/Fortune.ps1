@@ -71,13 +71,13 @@ jobs:
         with:
           path: .\
           recurse: true
-          output: psscriptanalyzer-results.sarif
+          output: psscriptanalyzer-results-${{ matrix.info.platform }}.sarif
 
       # Upload the SARIF file generated from PSScriptAnalyzer.
       - name: Upload PSScriptAnalyzer SARIF results file
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: psscriptanalyzer-results.sarif
+          sarif_file: psscriptanalyzer-results-${{ matrix.info.platform }}.sarif
 
       # Test code
       # Two different paths since shell parameter can't be ${{ matrix.info.shell }}
@@ -86,7 +86,7 @@ jobs:
       # - Pester (https://github.com/pester/Pester)
       # - PSToml (https://github.com/jborean93/PSToml)
       # - powershell-yaml (https://github.com/cloudbase/powershell-yaml)
-      - name: Install Pester and PSToml - Pwsh
+      - name: Install modules - Pwsh
         if: ${{ matrix.info.shell == 'pwsh' }}
         shell: pwsh
         run: |
@@ -95,7 +95,7 @@ jobs:
           Install-Module -Name PSToml -Force -Scope CurrentUser
           Install-Module -Name powershell-yaml -Force -Scope CurrentUser
 
-      - name: Install Pester and PSToml - Windows PowerShell
+      - name: Install modules - Windows PowerShell
         if: ${{ matrix.info.shell == 'powershell' }}
         shell: powershell
         run: |

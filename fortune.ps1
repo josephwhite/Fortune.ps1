@@ -284,11 +284,11 @@ function Get-FortuneFromFile {
         return $fortunes_from_file
     }
     # Get each fortune file from path with wildcard.
-    $FortuneFileItem = Get-Item -Path $FortuneFile
+    $FortuneFileItem = Get-ChildItem -Path $FortuneFile -Recurse -File
     Foreach ($path in $FortuneFileItem) {
         $fortune_vmes = "Compiling fortunes from {0}" -f $path
         Write-Verbose -Message ($fortune_vmes)
-        $fortunes_from_file_buffer = (Get-Content -Path $path -Raw) -replace "`r`n", "`n" -split "`n%`n"
+        $fortunes_from_file_buffer = (Get-Content -Path $path.FullName -Raw) -replace "`r`n", "`n" -split "`n%`n"
         $fortunes_from_file += Foreach ($entry in $fortunes_from_file_buffer) {
             [PSCustomObject] @{
                 Fortune = $entry
