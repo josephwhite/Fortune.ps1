@@ -364,7 +364,9 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
     }
     Context 'Util' {
         It 'Outputs Get-Help' {
-            $script_gethelp_output = (Get-Help -Name $script_path 2>&1 | Out-String)
+            $help_path = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "fortune-help.ps1")
+            Get-Content -Path $script_path | Select-Object -Skip 5 | Set-Content -Path $help_path
+            $script_gethelp_output = (Get-Help -Name $help_path 2>&1 | Out-String)
             $script_help_param_output = & $script_path -Help 2>&1 | Out-String
             $script_help_param_output | Should -Be $script_gethelp_output
         }
