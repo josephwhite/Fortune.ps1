@@ -163,6 +163,7 @@
             - Github: https://github.com/cloudbase/powershell-yaml
             - PowerShell Gallery: https://www.powershellgallery.com/packages/powershell-yaml/
 #>
+[CmdletBinding()]
 param(
     [Parameter()]
     [Alias("f")]
@@ -280,7 +281,7 @@ function Get-FortuneFromFile {
     )
     $fortunes_from_file = @()
     # Validation: Fortune filepath not valid
-    if (!(Test-Path($FortuneFile))) {
+    if (-not (Test-Path($FortuneFile))) {
         return $fortunes_from_file
     }
     # Get each fortune file from path with wildcard.
@@ -473,7 +474,6 @@ function Show-FortunePercentageByFile {
     $unique_paths | Add-Member -NotePropertyName Percentage -NotePropertyValue 0.0
     foreach ($path in $unique_paths) {
         $subsection = $Fortunes | Where-Object { $_.Path -eq $path.Path; }
-        #$path.Percentage = [double](($subsection.Count / $total_count) * 100)
         $path.Percentage = if ($Equal) { [double]((1 / $unique_paths.Count) * 100) } else { [double](($subsection.Count / $total_count) * 100) }
     }
     $unique_paths
@@ -505,7 +505,7 @@ function Get-FortuneReadoutTime {
 }
 
 if ($Help) {
-    Get-Help $PSCommandPath
+    Get-Help -Path $PSCommandPath
     exit 0
 }
 
@@ -530,7 +530,7 @@ if ($Length) {
 
 if ($File) {
     # Validation: File not a valid path
-    if (!(Test-Path($File))) {
+    if (-not (Test-Path($File))) {
         Write-Error -Message "Fortune file not found or invalid path." -Category ReadError
         exit 1
     }
@@ -570,7 +570,7 @@ if ($File) {
 
 if ($Group) {
     # Validation: File not a valid path
-    if (!(Test-Path($Config))) {
+    if (-not (Test-Path($Config))) {
         Write-Error -Message "Config file not found or invalid path." -Category ReadError
         exit 1
     }
