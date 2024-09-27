@@ -1,11 +1,7 @@
 <#PSScriptInfo
-
 .VERSION 1.0.4
-
 .GUID 0e2718fa-6a3f-426d-9378-beed592e39ff
-
 .AUTHOR isthisfieldimportant
-
 #>
 <#
     .SYNOPSIS
@@ -505,7 +501,11 @@ function Get-FortuneReadoutTime {
 }
 
 if ($Help) {
-    Get-Help -Name $PSCommandPath
+    # Blame PSScriptInfo breaking Get-Help
+    # https://stackoverflow.com/q/71579241
+    $help_path = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "fortune-help.ps1")
+    Get-Content -Path $PSCommandPath | Select-Object -Skip 5 | Set-Content -Path $help_path
+    Get-Help -Name $help_path
     exit 0
 }
 
