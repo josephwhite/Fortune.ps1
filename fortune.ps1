@@ -287,7 +287,7 @@ function Get-FortuneFromFile {
     # Get each fortune file from path with wildcard.
     $FortuneFileItem = Get-ChildItem -Path $FortuneFile -Recurse -File
     Foreach ($path in $FortuneFileItem) {
-        $fortune_vmes = "Compiling fortunes from {0}" -f $path
+        $fortune_vmes = "Compiling fortunes from $path"
         Write-Verbose -Message ($fortune_vmes)
         $fortunes_from_file_buffer = (Get-Content -Path $path.FullName -Raw) -replace "`r`n", "`n" -split "`n%`n"
         $fortunes_from_file += Foreach ($entry in $fortunes_from_file_buffer) {
@@ -362,7 +362,7 @@ function Select-FortunesByLength {
         }
     }
     $fortune_count_after = $Fortunes.Count
-    $fortune_vmes = "{0} to {1} fortune(s) after length filter." -f $fortune_count_before, $fortune_count_after
+    $fortune_vmes = "$fortune_count_before to $fortune_count_after fortune(s) after length filter."
     Write-Verbose -Message ($fortune_vmes)
 
     return $Fortunes
@@ -388,7 +388,7 @@ function Select-FortunesByPattern {
         }
     }
     $fortune_count_after = $Fortunes.Count
-    $fortune_vmes = "{0} to {1} fortune(s) after pattern filter." -f $fortune_count_before, $fortune_count_after
+    $fortune_vmes = "$fortune_count_before to $fortune_count_after fortune(s) after pattern filter."
     Write-Verbose -Message ($fortune_vmes)
 
     return $fortunes
@@ -505,7 +505,7 @@ function Get-FortuneReadoutTime {
 }
 
 if ($Help) {
-    Get-Help -Path $PSCommandPath
+    Get-Help -Name $PSCommandPath
     exit 0
 }
 
@@ -546,7 +546,7 @@ if ($File) {
     if ($Match) {
         Show-PossibleFortuneList -Fortunes $f
         $fortune_count = $f.Count
-        $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match
+        $fortune_vmes = "$fortune_count fortune(s) matching pattern $Match"
         Write-Verbose -Message ($fortune_vmes)
         exit 0
     }
@@ -606,7 +606,7 @@ if ($Group) {
     if ($Match) {
         Show-PossibleFortuneList -Fortunes $f
         $fortune_count = $f.Count
-        $fortune_vmes = "{0} fortune(s) matching pattern {1}" -f $fortune_count, $Match
+        $fortune_vmes = "$fortune_count fortune(s) matching pattern $Match"
         Write-Verbose -Message ($fortune_vmes)
         exit 0
     }
