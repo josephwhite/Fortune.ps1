@@ -275,6 +275,8 @@ class FortuneConfig {
     Path of Fortune file.
     .PARAMETER Group
     Group if Fortune file was found through Group/Config.
+    .OUTPUTS
+    [System.Management.Automation.PSCustomObject[]]
 #>
 function Get-FortuneFromFile {
     param(
@@ -312,6 +314,8 @@ function Get-FortuneFromFile {
     Object representation of Config file to pull Tag from.
     Previously used System.Object type to support multiple config formats and how they are imported to PowerShell.
     System.Object is the BaseType of Hashtable, OrderedDictionary, and PSCustomObject.
+    .OUTPUTS
+    [System.Management.Automation.PSCustomObject[]]
 #>
 function Get-FortuneFromFileCollection {
     param(
@@ -338,6 +342,8 @@ function Get-FortuneFromFileCollection {
     Filter for fortunes that are shorter than the given character length if present.
     .PARAMETER Length
     Filter for fortunes with the given character length if present.
+    .OUTPUTS
+    [System.Management.Automation.PSCustomObject[]]
 #>
 function Select-FortunesByLength {
     param(
@@ -376,6 +382,8 @@ function Select-FortunesByLength {
     Array of Fortunes to filter.
     .PARAMETER Pattern
     Filter fortunes matching a given REGEX pattern.
+    .OUTPUTS
+    [System.Management.Automation.PSCustomObject[]]
 #>
 function Select-FortunesByPattern {
     param(
@@ -402,6 +410,8 @@ function Select-FortunesByPattern {
     Array of Fortunes to filter.
     .PARAMETER Path
     Filter fortunes with a given Path value.
+    .OUTPUTS
+    [System.Management.Automation.PSCustomObject[]]
 #>
 function Select-FortunesByPath {
     param(
@@ -469,6 +479,8 @@ function Show-PossibleFortuneList {
     Array of Fortunes.
     .PARAMETER Equal
     Set the chance for each file to be equal.
+    .OUTPUTS
+    [System.Management.Automation.PSCustomObject[]]
 #>
 function Show-FortunePercentageByFile {
     param(

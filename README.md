@@ -32,24 +32,24 @@ TV = [
 ## Parameters
 
 Please read the `Get-Help` for example calls and in-depth parameter descriptions.
-| Flag              | Alias     | Action                                                         |
-|:------------------|:----------|:---------------------------------------------------------------|
-| PRIMARY                                                                                        |
-| -File [path]      | -f        | Filepath of Fortune file(s) to pool quotes from.               |
-| -Config [path]    | -c        | Config filepath. Should contain groupings of fortune filepaths. Default is current directory + "\fortune_config.psd1" |
-| -Group [foo]      | -g        | Group to pool from within config file. Default is "default".   |
-| SECONDARY                                                                                      |
-| -Long [#]         | -l        | Only use quotes longer than the length specified.              |
-| -Short [#]        | -s        | Only use quotes shorter than the length specified.             |
-| -Length [#]       | -n -ls    | Only use quotes that are exactly the length given.             |
-| -Match [pattern]  | -m -regex | Print all quotes matching the regex pattern given.             |
-| -Percentage       | -p        | Print filepaths of Fortune files and percentages.              |
-| -Seed [#]         |           | Sets seed for randomization.                                   |
-| -Equidistribution | -e        | Distribute equal probability among the selected Fortune files. |
-| -Wait             | -w        | Waits before exiting after printing single fortune.            |
-| UTILITY                                                                                        |
-| -Version          | -v        | Print version info and exit.                                   |
-| -Help             | -h        | Print help info and exit.                                      |
+| Parameter        | Alias   | Action                                                         |
+|:-----------------|:--------|:---------------------------------------------------------------|
+| PRIMARY|
+| File [path]      | f       | Filepath of Fortune file(s) to pool quotes from.|
+| Config [path]    | c       | Config filepath. Should contain groupings of fortune filepaths. Default is current directory + "\fortune_config.psd1".|
+| Group [foo]      | g       | Group to pool from within config file. Default is "default".|
+| SECONDARY|
+| Long [#]         | l       | Only use quotes longer than the length specified.|
+| Short [#]        | s       | Only use quotes shorter than the length specified.|
+| Length [#]       | n/ls    | Only use quotes that are exactly the length given.|
+| Match [pattern]  | m/regex | Print all quotes matching the regex pattern given.|
+| Percentage       | p       | Print filepaths of Fortune files and percentages.|
+| Seed [#]         |         | Sets seed for randomization.|
+| Equidistribution | e       | Distribute equal probability among the selected Fortune files.|
+| Wait             | w       | Waits before exiting after printing single fortune.|
+| UTILITY|
+| Version          | v       | Print version info and exit.|
+| Help             | h       | Print help info and exit.|
 
 ## Dependencies
 - Usage of a TOML config file requires [PSToml](https://github.com/jborean93/PSToml) and PowerShell v5.1+.
