@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.4
+.VERSION 1.0.5
 .GUID 0e2718fa-6a3f-426d-9378-beed592e39ff
 .AUTHOR isthisfieldimportant
 #>
@@ -90,6 +90,9 @@
     Each fortune will be separated by a single %.
     .PARAMETER Percentage
     Prints an array of fortune filepaths, thier percentages, and terminates if present.
+    .PARAMETER Seed
+    Sets seed for randomization.
+    Seed will affect every use of Get-Random.
     .PARAMETER Wait
     Waits before exiting after printing single fortune.
     .PARAMETER Version
@@ -202,6 +205,9 @@ param(
     [switch]$Percentage,
 
     [Parameter()]
+    [int]$Seed,
+
+    [Parameter()]
     [Alias("w")]
     [switch]$Wait,
 
@@ -284,7 +290,7 @@ function Get-FortuneFromFile {
     $FortuneFileItem = Get-ChildItem -Path $FortuneFile -Recurse -File
     Foreach ($path in $FortuneFileItem) {
         $fortune_vmes = "Compiling fortunes from $path"
-        Write-Verbose -Message ($fortune_vmes)
+        Write-Verbose -Message $fortune_vmes
         $fortunes_from_file_buffer = (Get-Content -Path $path.FullName -Raw) -replace "`r`n", "`n" -split "`n%`n"
         $fortunes_from_file += Foreach ($entry in $fortunes_from_file_buffer) {
             [PSCustomObject] @{
@@ -318,7 +324,6 @@ function Get-FortuneFromFileCollection {
         $fortunes_from_files_buffer = Get-FortuneFromFile -FortuneFile $path -Group $Tag
         $fortunes_from_files += $fortunes_from_files_buffer
     }
-
     return $fortunes_from_files
 }
 
@@ -359,7 +364,7 @@ function Select-FortunesByLength {
     }
     $fortune_count_after = $Fortunes.Count
     $fortune_vmes = "$fortune_count_before to $fortune_count_after fortune(s) after length filter."
-    Write-Verbose -Message ($fortune_vmes)
+    Write-Verbose -Message $fortune_vmes
 
     return $Fortunes
 }
@@ -385,7 +390,7 @@ function Select-FortunesByPattern {
     }
     $fortune_count_after = $Fortunes.Count
     $fortune_vmes = "$fortune_count_before to $fortune_count_after fortune(s) after pattern filter."
-    Write-Verbose -Message ($fortune_vmes)
+    Write-Verbose -Message $fortune_vmes
 
     return $fortunes
 }
@@ -417,6 +422,10 @@ function Select-FortunesByPath {
     Output a random Fortune from an array.
     .PARAMETER Fortunes
     Array of Fortunes.
+    .EXAMPLE
+    $fortune_output = Show-Fortune -Fortunes $fortunes
+    .OUTPUTS
+    [System.String]
 #>
 function Show-Fortune {
     param(
@@ -434,9 +443,13 @@ function Show-Fortune {
 
 <#
     .SYNOPSIS
-    Output each Fortune in an array, delimited by "%"
+    Output each Fortune in an array, delimited by "%".
     .PARAMETER Fortunes
     Array of Fortunes.
+    .EXAMPLE
+    $fortunes_output = Show-PossibleFortuneList -Fortunes $fortunes
+    .OUTPUTS
+    [System.String[]]
 #>
 function Show-PossibleFortuneList {
     param(
@@ -446,7 +459,6 @@ function Show-PossibleFortuneList {
         Write-Output $entry.Fortune
         Write-Output "%"
     }
-
     return
 }
 
@@ -473,6 +485,7 @@ function Show-FortunePercentageByFile {
         $path.Percentage = if ($Equal) { [double]((1 / $unique_paths.Count) * 100) } else { [double](($subsection.Count / $total_count) * 100) }
     }
     $unique_paths
+    return
 }
 
 <#
@@ -481,12 +494,18 @@ function Show-FortunePercentageByFile {
     .PARAMETER Length
     Length of fortune.
     .PARAMETER Min
-    Minimum time to wait.
+    Minimum time to wait in seconds.
+    .PARAMETER LPS
+    Letters Per Second.
+    .OUTPUTS
+    [System.Int32]
+    Time to read the fortune in seconds.
 #>
 function Get-FortuneReadoutTime {
     param(
         [int]$Length = 0,
-        [int]$Min = 6
+        [int]$Min = 6,
+        [int]$LPS = 20
     )
     # Validation: Inputs are positive integers.
     if ($Length -lt 0) {
@@ -495,7 +514,10 @@ function Get-FortuneReadoutTime {
     if ($Min -lt 0) {
         $Min = 0
     }
-    $sleep_calc_time = ($Length / 20)
+    if ($LPS -lt 1) {
+        $LPS = 1
+    }
+    $sleep_calc_time = ($Length / $LPS)
     $sleep_time = if ($sleep_calc_time -gt $Min) { $sleep_calc_time } else { $Min }
     return $sleep_time
 }
@@ -510,27 +532,32 @@ if ($Help) {
 }
 
 if ($Version) {
-    $program_version = ([version]::new(1, 0, 4)).toString()
+    $program_version = ([version]::new(1, 0, 5)).toString()
     Write-Output $program_version
     exit 0
 }
 
-# Parameter Priority Logic
-#    File is above Group
-#    Length is above Long and Short
+# Parameter Logic
+# - File has priority over Group and Config
 if ($File -and $Group) {
     $Group = $NULL
     $Config = $NULL
 }
-
+# - Length has priority over Long and Short
 if ($Length) {
     $Short = $NULL
     $Long = $NULL
 }
+# - Set seed for Get-Random if Seed is present
+if ($PSBoundParameters.ContainsKey('Seed')) {
+    Get-Random -SetSeed $Seed | Out-Null
+    $fortune_vmes = "Fortune Seed: $Seed"
+    Write-Verbose -Message $fortune_vmes
+}
 
 if ($File) {
     # Validation: File not a valid path
-    if (-not (Test-Path($File))) {
+    if (-not (Test-Path -Path $File)) {
         Write-Error -Message "Fortune file not found or invalid path." -Category ReadError
         exit 1
     }
@@ -547,7 +574,7 @@ if ($File) {
         Show-PossibleFortuneList -Fortunes $f
         $fortune_count = $f.Count
         $fortune_vmes = "$fortune_count fortune(s) matching pattern $Match"
-        Write-Verbose -Message ($fortune_vmes)
+        Write-Verbose -Message $fortune_vmes
         exit 0
     }
 
@@ -570,12 +597,12 @@ if ($File) {
 
 if ($Group) {
     # Validation: File not a valid path
-    if (-not (Test-Path($Config))) {
+    if (-not (Test-Path -Path $Config)) {
         Write-Error -Message "Config file not found or invalid path." -Category ReadError
         exit 1
     }
     # Get data from config file.
-    $config_file_ext = ((Get-Item $Config).Extension).ToUpper()
+    $config_file_ext = ((Get-Item -Path $Config).Extension).ToUpper()
     switch ($config_file_ext) {
         { $_ -in ".TOML" } {
             $cfg = ([FortuneConfig]::new($Config, "TOML")).Data
@@ -607,7 +634,7 @@ if ($Group) {
         Show-PossibleFortuneList -Fortunes $f
         $fortune_count = $f.Count
         $fortune_vmes = "$fortune_count fortune(s) matching pattern $Match"
-        Write-Verbose -Message ($fortune_vmes)
+        Write-Verbose -Message $fortune_vmes
         exit 0
     }
 
@@ -622,6 +649,8 @@ if ($Group) {
 
     if ($Wait) {
         $wait_time = Get-FortuneReadoutTime -Length $fortune_output.Length -Min 6
+        $fortune_vmes = "Pausing for $wait_time second(s)"
+        Write-Verbose -Message $fortune_vmes
         Start-Sleep -Seconds $wait_time
     }
 

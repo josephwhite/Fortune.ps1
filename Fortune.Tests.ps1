@@ -65,7 +65,7 @@ Describe 'Get-FortuneReadoutTime' -Tag "WindowsOnly", "MacosOnly" {
         $wait_time | Should -Be 6
     }
     It 'Defaults to 0 if inputs are negative' {
-        $wait_time = Get-FortuneReadoutTime -Length -10 -Min -9
+        $wait_time = Get-FortuneReadoutTime -Length -10 -Min -9 -LPS -8
         $wait_time | Should -Be 0
     }
 }
