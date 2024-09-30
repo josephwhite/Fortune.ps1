@@ -89,10 +89,10 @@
     Filter and prints fortunes matching a given REGEX pattern.
     Each fortune will be separated by a single %.
     .PARAMETER Percentage
-    Prints an array of fortune filepaths, thier percentages, and terminates if present.
+    Prints an array of fortune filepaths, their percentages, and terminates if present.
     .PARAMETER Seed
     Sets seed for randomization.
-    Seed will affect every use of Get-Random.
+    Will not affect Get-Random calls outside script.
     .PARAMETER Wait
     Waits before exiting after printing single fortune.
     .PARAMETER Version
@@ -333,6 +333,40 @@ function Get-FortuneFromFileCollection {
 
 <#
     .SYNOPSIS
+    Calculate the time needed to read a fortune in seconds.
+    .PARAMETER Length
+    Length of fortune.
+    .PARAMETER Min
+    Minimum time to wait in seconds.
+    .PARAMETER LPS
+    Letters Per Second.
+    .OUTPUTS
+    [System.Int32]
+    Time to read the fortune in seconds.
+#>
+function Get-FortuneReadoutTime {
+    param(
+        [int]$Length = 0,
+        [int]$Min = 6,
+        [int]$LPS = 20
+    )
+    # Validation: Inputs are positive integers.
+    if ($Length -lt 0) {
+        $Length = 0
+    }
+    if ($Min -lt 0) {
+        $Min = 0
+    }
+    if ($LPS -lt 1) {
+        $LPS = 1
+    }
+    $sleep_calc_time = ($Length / $LPS)
+    $sleep_time = if ($sleep_calc_time -gt $Min) { $sleep_calc_time } else { $Min }
+    return $sleep_time
+}
+
+<#
+    .SYNOPSIS
     Filter an array of Fortunes by character length.
     .PARAMETER Fortunes
     Array of Fortunes to filter.
@@ -432,6 +466,8 @@ function Select-FortunesByPath {
     Output a random Fortune from an array.
     .PARAMETER Fortunes
     Array of Fortunes.
+    .PARAMETER RNG
+    Random Number Generator object.
     .EXAMPLE
     $fortune_output = Show-Fortune -Fortunes $fortunes
     .OUTPUTS
@@ -439,15 +475,20 @@ function Select-FortunesByPath {
 #>
 function Show-Fortune {
     param(
-        [PSCustomObject[]]$Fortunes
+        [PSCustomObject[]]$Fortunes,
+        [System.Random]$RNG
     )
     # Validation: No fortunes for Get-Random (<= PowerShell v5.1)
     if ($Fortunes.Count -lt 1) {
         return
     }
-    $final_fortune = $Fortunes | Get-Random
+    if ($RNG) {
+        $final_fortune = $Fortunes[$RNG.Next($Fortunes.Count)]
+    }
+    else {
+        $final_fortune = $Fortunes | Get-Random
+    }
     Write-Output $final_fortune.Fortune
-
     return
 }
 
@@ -488,7 +529,6 @@ function Show-FortunePercentageByFile {
         [boolean]$Equal
     )
     $total_count = $Fortunes.Count
-    # Aggregate the unique Fortune Files
     $unique_paths = $Fortunes | Sort-Object -Unique -Property Path | Select-Object -Property Path
     # Calculate Percentage for each unique path
     $unique_paths | Add-Member -NotePropertyName Percentage -NotePropertyValue 0.0
@@ -498,40 +538,6 @@ function Show-FortunePercentageByFile {
     }
     $unique_paths
     return
-}
-
-<#
-    .SYNOPSIS
-    Calculate the time needed to read a fortune in seconds.
-    .PARAMETER Length
-    Length of fortune.
-    .PARAMETER Min
-    Minimum time to wait in seconds.
-    .PARAMETER LPS
-    Letters Per Second.
-    .OUTPUTS
-    [System.Int32]
-    Time to read the fortune in seconds.
-#>
-function Get-FortuneReadoutTime {
-    param(
-        [int]$Length = 0,
-        [int]$Min = 6,
-        [int]$LPS = 20
-    )
-    # Validation: Inputs are positive integers.
-    if ($Length -lt 0) {
-        $Length = 0
-    }
-    if ($Min -lt 0) {
-        $Min = 0
-    }
-    if ($LPS -lt 1) {
-        $LPS = 1
-    }
-    $sleep_calc_time = ($Length / $LPS)
-    $sleep_time = if ($sleep_calc_time -gt $Min) { $sleep_calc_time } else { $Min }
-    return $sleep_time
 }
 
 if ($Help) {
@@ -560,9 +566,13 @@ if ($Length) {
     $Short = $NULL
     $Long = $NULL
 }
-# - Set seed for Get-Random if Seed is present
+# - Set Seed if present
 if ($PSBoundParameters.ContainsKey('Seed')) {
-    Get-Random -SetSeed $Seed | Out-Null
+    # Not only do we get to use the .NET [System.Random] class,
+    # but we also have to use the .NET Framework 4.5 functions
+    # to stay compatible with Windows PowerShell.
+    # Blame PowerShell's Get-Random not supporting a flag for clearing set seeds.
+    $rng_object = [System.Random]::new($Seed)
     $fortune_vmes = "Fortune Seed: $Seed"
     Write-Verbose -Message $fortune_vmes
 }
@@ -574,37 +584,6 @@ if ($File) {
         exit 1
     }
     $f = Get-FortuneFromFile -FortuneFile $File
-    $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length
-    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match
-
-    if ($Percentage) {
-        Show-FortunePercentageByFile -Fortunes $f -Equal $Equidistribution
-        exit 0
-    }
-
-    if ($Match) {
-        Show-PossibleFortuneList -Fortunes $f
-        $fortune_count = $f.Count
-        $fortune_vmes = "$fortune_count fortune(s) matching pattern $Match"
-        Write-Verbose -Message $fortune_vmes
-        exit 0
-    }
-
-    $unique_paths = $f | Sort-Object -Unique -Property Path | Select-Object -Property Path
-    if (($unique_paths.Count -gt 0) -and ($Equidistribution)) {
-        [string]$rand_file = $unique_paths.Path | Get-Random
-        $f = Select-FortunesByPath -Fortunes $f -Path $rand_file
-    }
-
-    $fortune_output = Show-Fortune -Fortunes $f
-    Write-Output $fortune_output
-
-    if ($Wait) {
-        $wait_time = Get-FortuneReadoutTime -Length $fortune_output.Length -Min 6
-        Start-Sleep -Seconds $wait_time
-    }
-
-    exit 0
 }
 
 if ($Group) {
@@ -634,39 +613,43 @@ if ($Group) {
         }
     }
     $f = Get-FortuneFromFileCollection -Tag $Group -ConfigObj $cfg
-    $f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length
-    $f = Select-FortunesByPattern -Fortunes $f -Pattern $Match
+}
 
-    if ($Percentage) {
-        Show-FortunePercentageByFile -Fortunes $f -Equal $Equidistribution
-        exit 0
-    }
+$f = Select-FortunesByLength -Fortunes $f -Long $Long -Short $Short -Length $Length
+$f = Select-FortunesByPattern -Fortunes $f -Pattern $Match
 
-    if ($Match) {
-        Show-PossibleFortuneList -Fortunes $f
-        $fortune_count = $f.Count
-        $fortune_vmes = "$fortune_count fortune(s) matching pattern $Match"
-        Write-Verbose -Message $fortune_vmes
-        exit 0
-    }
-
-    $unique_paths = $f | Sort-Object -Unique -Property Path | Select-Object -Property Path
-    if (($unique_paths.Count -gt 0) -and ($Equidistribution)) {
-        [string]$rand_file = $unique_paths.Path | Get-Random
-        $f = Select-FortunesByPath -Fortunes $f -Path $rand_file
-    }
-
-    $fortune_output = Show-Fortune -Fortunes $f
-    Write-Output $fortune_output
-
-    if ($Wait) {
-        $wait_time = Get-FortuneReadoutTime -Length $fortune_output.Length -Min 6
-        $fortune_vmes = "Pausing for $wait_time second(s)"
-        Write-Verbose -Message $fortune_vmes
-        Start-Sleep -Seconds $wait_time
-    }
-
+if ($Percentage) {
+    Show-FortunePercentageByFile -Fortunes $f -Equal $Equidistribution
     exit 0
+}
+
+if ($Match) {
+    Show-PossibleFortuneList -Fortunes $f
+    $fortune_count = $f.Count
+    $fortune_vmes = "$fortune_count fortune(s) matching pattern $Match"
+    Write-Verbose -Message $fortune_vmes
+    exit 0
+}
+
+$unique_paths = $f | Sort-Object -Unique -Property Path | Select-Object -Property Path
+if (($unique_paths.Count -gt 1) -and ($Equidistribution)) {
+    if ($rng_object) {
+        [string]$rand_file = $unique_paths[$rng_object.Next($unique_paths.Count)].Path
+    }
+    else {
+        [string]$rand_file = $unique_paths.Path | Get-Random
+    }
+    $f = Select-FortunesByPath -Fortunes $f -Path $rand_file
+}
+
+$fortune_output = Show-Fortune -Fortunes $f -RNG $rng_object
+Write-Output $fortune_output
+
+if ($Wait) {
+    $wait_time = Get-FortuneReadoutTime -Length $fortune_output.Length -Min 6
+    $fortune_vmes = "Pausing for $wait_time second(s)"
+    Write-Verbose -Message $fortune_vmes
+    Start-Sleep -Seconds $wait_time
 }
 
 exit 0

@@ -382,6 +382,15 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
             $script_output = & $script_path -File $path_wtxt -Long 20 -Short 100 -Length 50
             $script_output.Length | Should -Be 50
         }
+        It 'Does not overwrite a Get-Random seed in session' {
+            $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
+            $script_output1 = & $script_path -File $path_wtxt -Seed 200
+            $get_random1 = Get-Random
+            $script_output2 = & $script_path -File $path_wtxt -Seed 200
+            $get_random2 = Get-Random
+            $script_output1 | Should -Be $script_output2
+            $get_random1 | Should -Not -Be $get_random2
+        }
     }
     Context 'Exit' {
         # Exit 0
