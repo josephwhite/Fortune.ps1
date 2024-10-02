@@ -416,18 +416,26 @@ function Select-FortunesByLength {
     Array of Fortunes to filter.
     .PARAMETER Pattern
     Filter fortunes matching a given REGEX pattern.
+    .PARAMETER Exclude
+    REGEX pattern to filter out from array.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
 #>
 function Select-FortunesByPattern {
     param(
         [PSCustomObject[]]$Fortunes,
-        [string]$Pattern
+        [string]$Pattern,
+        [String]$Exclude
     )
     $fortune_count_before = $Fortunes.Count
     if ($Pattern) {
         $Fortunes = $Fortunes | Where-Object {
             $_.Fortune -match $Pattern
+        }
+    }
+    if ($Exclude) {
+        $Fortunes = $Fortunes | Where-Object {
+            $_.Fortune -notmatch $Exclude
         }
     }
     $fortune_count_after = $Fortunes.Count
@@ -468,8 +476,12 @@ function Select-FortunesByPath {
     Array of Fortunes.
     .PARAMETER RNG
     Random Number Generator object.
+    Optimally should be used only in cases where a seeded Get-Random call is wanted.
     .EXAMPLE
     $fortune_output = Show-Fortune -Fortunes $fortunes
+    .EXAMPLE
+    $pseudo_rand = [System.Random]::new(1)
+    $fortune_output = Show-Fortune -Fortunes $fortunes -RNG $pseudo_rand
     .OUTPUTS
     [System.String]
 #>
