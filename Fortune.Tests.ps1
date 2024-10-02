@@ -19,7 +19,7 @@ l0l -- lma0 even.
 
 Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
     }
     It 'Creates a Hashtable (TOML)' {
         $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.toml")
@@ -54,7 +54,7 @@ Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
 
 Describe 'Get-FortuneReadoutTime' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
     }
     It 'Uses Length' {
         $wait_time = Get-FortuneReadoutTime -Length 200
@@ -72,7 +72,7 @@ Describe 'Get-FortuneReadoutTime' -Tag "WindowsOnly", "MacosOnly" {
 
 Describe 'Get-FortuneFromFile' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
     }
     It 'Gets Fortunes from file path' {
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
@@ -106,7 +106,7 @@ Describe 'Get-FortuneFromFile' -Tag "WindowsOnly", "MacosOnly" {
 
 Describe 'Get-FortuneFromFileCollection' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
     }
     Context "TOML" {
         BeforeEach {
@@ -222,7 +222,7 @@ example:
 
 Describe 'Select-FortunesByLength' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -269,7 +269,7 @@ Describe 'Select-FortunesByLength' -Tag "WindowsOnly", "MacosOnly" {
 
 Describe 'Select-FortunesByPattern' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -285,11 +285,18 @@ Describe 'Select-FortunesByPattern' -Tag "WindowsOnly", "MacosOnly" {
             $Fortune | Should -Match [0-9]
         }
     }
+    It 'Excludes patterns if specified' {
+        $f = Select-FortunesByPattern -Fortunes $f -Pattern "You" -Exclude "will"
+        foreach ($fortune in $f.Fortune) {
+            $Fortune | Should -Match "You"
+            $Fortune | Should -Not -Match "will"
+        }
+    }
 }
 
 Describe 'Select-FortunesByPath' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -307,13 +314,22 @@ Describe 'Select-FortunesByPath' -Tag "WindowsOnly", "MacosOnly" {
 
 Describe 'Show-Fortune' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
     It 'Outputs random Fortune' {
         $fortune = Show-Fortune -Fortunes $f
         $fortune | Should -Not -BeNullOrEmpty
+    }
+    It 'Outputs different fortunes based on seed' {
+        $rng_object1 = [System.Random]::new(1000)
+        $fortune1 = Show-Fortune -Fortunes $f -RNG $rng_object1
+        $fortune2 = Show-Fortune -Fortunes $f -RNG $rng_object1
+        $rng_object2 = [System.Random]::new(1000)
+        $fortune3 = Show-Fortune -Fortunes $f -RNG $rng_object2
+        $fortune1 | Should -Be -Not $fortune2
+        $fortune1 | Should -Be $fortune3
     }
     It 'Outputs nothing with no input' {
         $fortune = Show-Fortune
@@ -322,7 +338,7 @@ Describe 'Show-Fortune' -Tag "WindowsOnly", "MacosOnly" {
 }
 Describe 'Show-PossibleFortuneList' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -338,7 +354,7 @@ Describe 'Show-PossibleFortuneList' -Tag "WindowsOnly", "MacosOnly" {
 
 Describe 'Show-FortunePercentageByFile' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
-        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Help | Out-Null
+        . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
         $path = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
         $script:f = Get-FortuneFromFile -FortuneFile $path
     }
@@ -384,9 +400,10 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
         }
         It 'Does not overwrite a Get-Random seed in session' {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
-            $script_output1 = & $script_path -File $path_wtxt -Seed 200
+            $rng_seed = Get-Random -Minimum 0 -Maximum 1000
+            $script_output1 = & $script_path -File $path_wtxt -Seed $rng_seed
             $get_random1 = Get-Random
-            $script_output2 = & $script_path -File $path_wtxt -Seed 200
+            $script_output2 = & $script_path -File $path_wtxt -Seed $rng_seed
             $get_random2 = Get-Random
             $script_output1 | Should -Be $script_output2
             $get_random1 | Should -Not -Be $get_random2
@@ -492,6 +509,9 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
         }
         It 'Returns Exit Code 0 for running with empty File, Group, and Config parameters' {
             & $script_path -File "" -Group "" -Config "" 2>&1
+            [int]$lec = $LASTEXITCODE
+            $lec | Should -Be 0
+            & $script_path -File "" -Group "" -Config "" -Length 20 -Match "Y" 2>&1
             [int]$lec = $LASTEXITCODE
             $lec | Should -Be 0
         }
