@@ -161,6 +161,16 @@
             - Needed to parse YAML files.
             - Github: https://github.com/cloudbase/powershell-yaml
             - PowerShell Gallery: https://www.powershellgallery.com/packages/powershell-yaml/
+    Blame
+        - Using .NET's [System.Random]
+            - Usage of Seed parameter.
+            - Set seed WITHOUT affecting Get-Random Seed outside of the script.
+            - Get-Random doesn't support a flag for clearing set seeds.
+                - "You can't reset the seed to its default value."
+                    - https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/get-random
+        -  Creating a subcopy of the script in temp path.
+            - PSScriptInfo seems to cause issues for Get-Help.
+            - https://stackoverflow.com/q/71579241
 #>
 [CmdletBinding()]
 param(
@@ -559,8 +569,7 @@ function Show-FortunePercentageByFile {
 }
 
 if ($Help) {
-    # Blame PSScriptInfo breaking Get-Help
-    # https://stackoverflow.com/q/71579241
+    # Recreate script in temp path without PSScriptInfo to have Get-Help work.
     $help_path = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "fortune-help.ps1")
     Get-Content -Path $PSCommandPath | Select-Object -Skip 5 | Set-Content -Path $help_path
     Get-Help -Name $help_path
@@ -589,7 +598,6 @@ if ($PSBoundParameters.ContainsKey('Seed')) {
     # Not only do we get to use the .NET [System.Random] class,
     # but we also have to use the .NET Framework 4.5 functions
     # to stay compatible with Windows PowerShell.
-    # Blame PowerShell's Get-Random not supporting a flag for clearing set seeds.
     $rng_object = [System.Random]::new($Seed)
     $fortune_vmes = "Fortune Seed: $Seed"
     Write-Verbose -Message $fortune_vmes

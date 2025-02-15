@@ -83,6 +83,7 @@ jobs:
       # Two different paths since shell parameter can't be ${{ matrix.info.shell }}
 
       # Installs the following modules for PowerShell
+      # - PSResourceGet (https://github.com/PowerShell/PSResourceGet)
       # - Pester (https://github.com/pester/Pester)
       # - PSToml (https://github.com/jborean93/PSToml)
       # - powershell-yaml (https://github.com/cloudbase/powershell-yaml)
