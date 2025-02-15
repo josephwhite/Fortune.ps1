@@ -379,6 +379,12 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
         $script:script_path = $PSCommandPath.Replace('.Tests.ps1', '.ps1')
     }
     Context 'Util' {
+        It 'Outputs Version' {
+            $psfi = Get-PSScriptFileInfo -Path $script_path
+            [string]$script_version_meta = $psfi.ScriptMetadataComment.Version.OriginalVersion
+            [string]$script_version_param_output = & $script_path -Version 2>&1
+            $script_version_param_output | Should -Be $script_version_meta
+        }
         It 'Outputs Get-Help' {
             $help_path = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "fortune-help.ps1")
             Get-Content -Path $script_path | Select-Object -Skip 5 | Set-Content -Path $help_path

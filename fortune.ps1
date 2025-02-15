@@ -336,10 +336,16 @@ function Get-FortuneFromFileCollection {
     Calculate the time needed to read a fortune in seconds.
     .PARAMETER Length
     Length of fortune.
+    Should be a positive integer.
+    See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER Min
     Minimum time to wait in seconds.
+    Should be a positive integer.
+    See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER LPS
     Letters Per Second.
+    Should be a strictly positive integer.
+    See: https://proofwiki.org/wiki/Definition:Strictly_Positive/Integer
     .OUTPUTS
     [System.Int32]
     Time to read the fortune in seconds.
@@ -578,7 +584,7 @@ if ($Length) {
     $Short = $NULL
     $Long = $NULL
 }
-# - Set Seed if present
+# - Set Seed if present for Random Number Generator object
 if ($PSBoundParameters.ContainsKey('Seed')) {
     # Not only do we get to use the .NET [System.Random] class,
     # but we also have to use the .NET Framework 4.5 functions
@@ -587,6 +593,9 @@ if ($PSBoundParameters.ContainsKey('Seed')) {
     $rng_object = [System.Random]::new($Seed)
     $fortune_vmes = "Fortune Seed: $Seed"
     Write-Verbose -Message $fortune_vmes
+}
+else {
+    $rng_object = [System.Random]::new()
 }
 
 if ($File) {
@@ -645,12 +654,7 @@ if ($Match) {
 
 $unique_paths = $f | Sort-Object -Unique -Property Path | Select-Object -Property Path
 if (($unique_paths.Count -gt 1) -and ($Equidistribution)) {
-    if ($rng_object) {
-        [string]$rand_file = $unique_paths[$rng_object.Next($unique_paths.Count)].Path
-    }
-    else {
-        [string]$rand_file = $unique_paths.Path | Get-Random
-    }
+    [string]$rand_file = $unique_paths[$rng_object.Next($unique_paths.Count)].Path
     $f = Select-FortunesByPath -Fortunes $f -Path $rand_file
 }
 
