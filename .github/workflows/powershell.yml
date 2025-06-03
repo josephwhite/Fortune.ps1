@@ -52,6 +52,9 @@ jobs:
             - platform: "macos-latest"
               pestertag: "MacosOnly"
               shell: "pwsh"
+          dependency:
+            - pstoml: ["0.3.1", "0.4.0"]
+            - powershell-yaml: ["0.4.7", "0.4.12"]
 
             #platform: [windows-latest, macos-latest, ubuntu-latest]
 
@@ -62,6 +65,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Create UUID for Job
+        shell: pwsh
+        run: |
+          $BUILD_UUID = ((New-Guid) -split "-")[0]
+          echo "BUILD_UUID=$BUILD_UUID" >> $env:GITHUB_ENV
+
       # Scan code (Pwsh)
       # Installs the following modules for PowerShell
       # - PSScriptAnalyzer (https://github.com/PowerShell/PSScriptAnalyzer)
@@ -71,18 +80,18 @@ jobs:
         with:
           path: .\
           recurse: true
-          output: psscriptanalyzer-results-${{ matrix.info.platform }}.sarif
+          output: psscriptanalyzer-results-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.sarif
 
       # Upload the SARIF file generated from PSScriptAnalyzer.
       - name: Upload PSScriptAnalyzer SARIF results file
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: psscriptanalyzer-results-${{ matrix.info.platform }}.sarif
+          sarif_file: psscriptanalyzer-results-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.sarif
 
       # Test code
       # Two different paths since shell parameter can't be ${{ matrix.info.shell }}
 
-      # Installs the following modules for PowerShell
+      # Installs the following modules for PowerShell (and records the versions for dep testing)
       # - PSResourceGet (https://github.com/PowerShell/PSResourceGet)
       # - Pester (https://github.com/pester/Pester)
       # - PSToml (https://github.com/jborean93/PSToml)
@@ -94,8 +103,13 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force -Scope CurrentUser
           Install-Module -Name Pester -Force -Scope CurrentUser
-          Install-Module -Name PSToml -Force -Scope CurrentUser
-          Install-Module -Name powershell-yaml -Force -Scope CurrentUser
+          Install-Module -Name PSToml -RequiredVersion ${{ matrix.dependency.pstoml }}  -Force -Scope CurrentUser
+          Install-Module -Name powershell-yaml -RequiredVersion ${{ matrix.dependency.powershell-yaml }} -Force -Scope CurrentUser
+
+          New-Item -Name "requirements.psd1" -ItemType "File" -Value "@{`n"
+          Add-Content -Path "requirements.psd1" -Value "PSToml = '${{ matrix.dependency.pstoml }}'"
+          Add-Content -Path "requirements.psd1" -Value "powershell-yaml = '${{ matrix.dependency.powershell-yaml }}'"
+          Add-Content -Path "requirements.psd1" -Value "}"
 
       - name: Install modules - Windows PowerShell
         if: ${{ matrix.info.shell == 'powershell' }}
@@ -104,8 +118,13 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force -Scope CurrentUser
           Install-Module -Name Pester -Force -Scope CurrentUser
-          Install-Module -Name PSToml -Force -Scope CurrentUser
-          Install-Module -Name powershell-yaml -Force -Scope CurrentUser
+          Install-Module -Name PSToml -RequiredVersion ${{ matrix.dependency.pstoml }} -Force -Scope CurrentUser
+          Install-Module -Name powershell-yaml -RequiredVersion ${{ matrix.dependency.powershell-yaml }} -Force -Scope CurrentUser
+
+          New-Item -Name "requirements.psd1" -ItemType "File" -Value "@{`n"
+          Add-Content -Path "requirements.psd1" -Value "PSToml = '${{ matrix.dependency.pstoml }}'"
+          Add-Content -Path "requirements.psd1" -Value "powershell-yaml = '${{ matrix.dependency.powershell-yaml }}'"
+          Add-Content -Path "requirements.psd1" -Value "}"
 
       # Run Pester tests with Code Coverage
       # Two different steps since shell parameter can't be ${{ matrix.info.shell }}
@@ -116,10 +135,10 @@ jobs:
           $pesterconfig = New-PesterConfiguration
           $pesterconfig.Run.Path = "."
           $pesterconfig.CodeCoverage.Enabled = $true
-          $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.info.platform }}.xml"
+          $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.xml"
           $pesterconfig.CodeCoverage.CoveragePercentTarget = 75
           $pesterconfig.TestResult.Enabled = $true
-          $pesterconfig.TestResult.OutputPath = "pester-tests-${{ matrix.info.platform }}.xml"
+          $pesterconfig.TestResult.OutputPath = "pester-tests-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.xml"
           $pesterconfig.Filter.Tag = "${{ matrix.info.pestertag }}"
           Invoke-Pester -Configuration $pesterconfig
 
@@ -130,10 +149,10 @@ jobs:
           $pesterconfig = New-PesterConfiguration
           $pesterconfig.Run.Path = "."
           $pesterconfig.CodeCoverage.Enabled = $true
-          $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.info.platform }}.xml"
+          $pesterconfig.CodeCoverage.OutputPath = "pester-coverage-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.xml"
           $pesterconfig.CodeCoverage.CoveragePercentTarget = 75
           $pesterconfig.TestResult.Enabled = $true
-          $pesterconfig.TestResult.OutputPath = "pester-tests-${{ matrix.info.platform }}.xml"
+          $pesterconfig.TestResult.OutputPath = "pester-tests-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.xml"
           $pesterconfig.Filter.Tag = "${{ matrix.info.pestertag }}"
           Invoke-Pester -Configuration $pesterconfig
 
@@ -142,11 +161,13 @@ jobs:
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
-          name: pester-report-${{ matrix.info.shell }}-${{ matrix.info.platform }}
+          name: pester-report-${{ matrix.info.shell }}-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}
           # Includes tests and code coverage.
+          # Also includes deps.
           path: |
-            pester-coverage-${{ matrix.info.platform }}.xml
-            pester-tests-${{ matrix.info.platform }}.xml
+            pester-coverage-${{ matrix.info.platform }}--${{ env.BUILD_UUID }}.xml
+            pester-tests-${{ matrix.info.platform }}--${{ env.BUILD_UUID }}.xml
+            requirements-${{ env.BUILD_UUID }}.psd1
           if-no-files-found: warn
           retention-days: 0
           compression-level: 6

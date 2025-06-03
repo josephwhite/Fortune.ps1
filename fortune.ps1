@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.5
+.VERSION 1.0.6
 .GUID 0e2718fa-6a3f-426d-9378-beed592e39ff
 .AUTHOR isthisfieldimportant
 #>
@@ -154,13 +154,18 @@
             - Needed to parse TOML files.
             - Github: https://github.com/jborean93/PSToml
             - PowerShell Gallery: https://www.powershellgallery.com/packages/PSToml/
-            - Version info
-                - v0.3.0+ supports PowerShell v5.1+
+            - Compatability by version:
+                - v0.4.0 supports PowerShell v5.1 & v7.4+
+                - v0.3.x supports PowerShell v5.1+
                 - v0.2.0 supports PowerShell v7.2+ (not recommended)
         - powershell-yaml
             - Needed to parse YAML files.
             - Github: https://github.com/cloudbase/powershell-yaml
             - PowerShell Gallery: https://www.powershellgallery.com/packages/powershell-yaml/
+             - Compatability by version:
+                - v0.4.8+ supports PowerShell v5.0+
+                - v0.4.7 supports PowerShell v3.0+
+
     Blame
         - Using .NET's [System.Random]
             - Usage of Seed parameter.
@@ -300,11 +305,11 @@ function Get-FortuneFromFile {
     }
     # Get each fortune file from path with wildcard.
     $FortuneFileItem = Get-ChildItem -Path $FortuneFile -Recurse -File
-    Foreach ($path in $FortuneFileItem) {
+    foreach ($path in $FortuneFileItem) {
         $fortune_vmes = "Compiling fortunes from $path"
         Write-Verbose -Message $fortune_vmes
         $fortunes_from_file_buffer = (Get-Content -Path $path.FullName -Raw) -replace "`r`n", "`n" -split "`n%`n"
-        $fortunes_from_file += Foreach ($entry in $fortunes_from_file_buffer) {
+        $fortunes_from_file += foreach ($entry in $fortunes_from_file_buffer) {
             [PSCustomObject] @{
                 Fortune = $entry
                 Path    = $path.Fullname
@@ -334,7 +339,7 @@ function Get-FortuneFromFileCollection {
     )
     $FilesInGroup = $ConfigObj.$Tag
     $fortunes_from_files = @()
-    Foreach ($path in $FilesInGroup) {
+    foreach ($path in $FilesInGroup) {
         $fortunes_from_files_buffer = Get-FortuneFromFile -FortuneFile $path -Group $Tag
         $fortunes_from_files += $fortunes_from_files_buffer
     }
@@ -577,7 +582,7 @@ if ($Help) {
 }
 
 if ($Version) {
-    $program_version = ([version]::new(1, 0, 5)).toString()
+    $program_version = ([version]::new(1, 0, 6)).toString()
     Write-Output $program_version
     exit 0
 }

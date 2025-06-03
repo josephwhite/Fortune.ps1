@@ -36,8 +36,8 @@ Please read the `Get-Help` for example calls and in-depth parameter descriptions
 |:-----------------|:--------|:---------------------------------------------------------------|
 | PRIMARY|
 | File [path]      | f       | Filepath of Fortune file(s) to pool quotes from.|
-| Config [path]    | c       | Config filepath. Should contain groupings of fortune filepaths. Default is current directory + "\fortune_config.psd1".|
-| Group [foo]      | g       | Group to pool from within config file. Default is "default".|
+| Config [path]    | c       | Config filepath. Should contain groupings of fortune filepaths.<br> Default is current directory + "\fortune_config.psd1".|
+| Group [foo]      | g       | Group to pool from within config file.<br> Default is "default".|
 | SECONDARY|
 | Long [#]         | l       | Only use quotes longer than the length specified.|
 | Short [#]        | s       | Only use quotes shorter than the length specified.|

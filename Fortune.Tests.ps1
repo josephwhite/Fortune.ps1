@@ -8,7 +8,7 @@ bar
 l0l -- lma0 even.
 '@
     $script:foobar_fortunes_buffer = $foobar_fortune_content -replace "`r`n", "`n" -split "`n%`n"
-    $script:foobar_fortunes = Foreach ($entry in $foobar_fortunes_buffer) {
+    $script:foobar_fortunes = foreach ($entry in $foobar_fortunes_buffer) {
         [PSCustomObject] @{
             Fortune = $entry
             Path    = "C:\foo\fortunes.txt"
