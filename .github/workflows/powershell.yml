@@ -53,9 +53,11 @@ jobs:
               pestertag: "MacosOnly"
               shell: "pwsh"
           dependency-pstoml:
-            - version: ["0.3.1", "0.4.0"]
+            - version: "0.3.1"
+            - version: "0.4.0"
           dependency-powershell-yaml:
-            - version: ["0.4.7", "0.4.12"]
+            - version: "0.4.7"
+            - version: "0.4.12"
 
             #platform: [windows-latest, macos-latest, ubuntu-latest]
 
