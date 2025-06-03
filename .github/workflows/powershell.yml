@@ -52,13 +52,10 @@ jobs:
             - platform: "macos-latest"
               pestertag: "MacosOnly"
               shell: "pwsh"
-          dependency:
-            - pstoml:
-              - "0.3.1"
-              - "0.4.0"
-            - powershell-yaml:
-              - "0.4.7"
-              - "0.4.12"
+          dependency-pstoml:
+            - version: ["0.3.1", "0.4.0"]
+          dependency-powershell-yaml:
+            - version: ["0.4.7", "0.4.12"]
 
             #platform: [windows-latest, macos-latest, ubuntu-latest]
 
@@ -107,13 +104,15 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force -Scope CurrentUser
           Install-Module -Name Pester -Force -Scope CurrentUser
-          $PSTOML_VERSION = ${{ matrix.dependency.pstoml }}
+
+          $PSTOML_VERSION = ${{ matrix.dependency-pstoml.version }}
+          $PSYAML_VERSION = ${{ matrix.dependency-powershell-yaml.version }}
           Install-Module -Name PSToml -RequiredVersion $PSTOML_VERSION -Force -Scope CurrentUser
-          Install-Module -Name powershell-yaml -RequiredVersion ${{ matrix.dependency.powershell-yaml }} -Force -Scope CurrentUser
+          Install-Module -Name powershell-yaml -RequiredVersion $PSYAML_VERSION -Force -Scope CurrentUser
 
           New-Item -Name "requirements.psd1" -ItemType "File" -Value "@{`n"
-          Add-Content -Path "requirements.psd1" -Value "PSToml = '${{ matrix.dependency.pstoml }}'"
-          Add-Content -Path "requirements.psd1" -Value "powershell-yaml = '${{ matrix.dependency.powershell-yaml }}'"
+          Add-Content -Path "requirements.psd1" -Value "PSToml = '$PSTOML_VERSION'"
+          Add-Content -Path "requirements.psd1" -Value "powershell-yaml = '$PSYAML_VERSION'"
           Add-Content -Path "requirements.psd1" -Value "}"
 
       - name: Install modules - Windows PowerShell
@@ -123,12 +122,15 @@ jobs:
           Set-PSRepository PSGallery -InstallationPolicy Trusted
           Install-Module -Name Microsoft.PowerShell.PSResourceGet -Force -Scope CurrentUser
           Install-Module -Name Pester -Force -Scope CurrentUser
-          Install-Module -Name PSToml -RequiredVersion ${{ matrix.dependency.pstoml }} -Force -Scope CurrentUser
-          Install-Module -Name powershell-yaml -RequiredVersion ${{ matrix.dependency.powershell-yaml }} -Force -Scope CurrentUser
+
+          $PSTOML_VERSION = ${{ matrix.dependency-pstoml.version }}
+          $PSYAML_VERSION = ${{ matrix.dependency-powershell-yaml.version }}
+          Install-Module -Name PSToml -RequiredVersion $PSTOML_VERSION -Force -Scope CurrentUser
+          Install-Module -Name powershell-yaml -RequiredVersion $PSYAML_VERSION -Force -Scope CurrentUser
 
           New-Item -Name "requirements.psd1" -ItemType "File" -Value "@{`n"
-          Add-Content -Path "requirements.psd1" -Value "PSToml = '${{ matrix.dependency.pstoml }}'"
-          Add-Content -Path "requirements.psd1" -Value "powershell-yaml = '${{ matrix.dependency.powershell-yaml }}'"
+          Add-Content -Path "requirements.psd1" -Value "PSToml = '$PSTOML_VERSION'"
+          Add-Content -Path "requirements.psd1" -Value "powershell-yaml = '$PSYAML_VERSION'"
           Add-Content -Path "requirements.psd1" -Value "}"
 
       # Run Pester tests with Code Coverage
