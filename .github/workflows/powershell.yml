@@ -174,8 +174,8 @@ jobs:
           # Includes tests and code coverage.
           # Also includes deps.
           path: |
-            pester-coverage-${{ matrix.info.platform }}--${{ env.BUILD_UUID }}.xml
-            pester-tests-${{ matrix.info.platform }}--${{ env.BUILD_UUID }}.xml
+            pester-coverage-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.xml
+            pester-tests-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}.xml
             requirements-${{ env.BUILD_UUID }}.psd1
           if-no-files-found: warn
           retention-days: 0
