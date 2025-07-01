@@ -324,11 +324,16 @@ Describe 'Show-Fortune' -Tag "WindowsOnly", "MacosOnly" {
     }
     It 'Outputs different fortunes based on seed' {
         $rng_object1 = [System.Random]::new(1000)
-        $fortune1 = Show-Fortune -Fortunes $f -RNG $rng_object1
-        $fortune2 = Show-Fortune -Fortunes $f -RNG $rng_object1
+        $rng_value1 = $rng_object1.Next(1000)
+        $fortune1 = Show-Fortune -Fortunes $f -RNG $rng_value1
+        $rng_value2 = $rng_object1.Next(1000)
+        $fortune2 = Show-Fortune -Fortunes $f -RNG $rng_value2
         $rng_object2 = [System.Random]::new(1000)
-        $fortune3 = Show-Fortune -Fortunes $f -RNG $rng_object2
-        $fortune1 | Should -Be -Not $fortune2
+        $rng_value3 = $rng_object2.Next(1000)
+        $fortune3 = Show-Fortune -Fortunes $f -RNG $rng_value3
+        if ($rng_value1 -ne $rng_value2) {
+            $fortune1 | Should -Be -Not $fortune2
+        }
         $fortune1 | Should -Be $fortune3
     }
     It 'Outputs nothing with no input' {
@@ -396,6 +401,10 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
             $path_wtxt = [System.IO.Path]::Combine($PSScriptRoot, "fortunes", "example_fortunes.txt")
             [string[]]$script_output = & $script_path -File $path_wtxt -Match "LOL" -Verbose 4>&1
             [string]$script_output[3] | Should -Be "0 fortune(s) matching pattern LOL"
+        }
+        It 'Outputs nothing when dot sourcing' {
+            $script_output = . $PSCommandPath.Replace('.Tests.ps1', '.ps1')
+            $script_output | Should -Be $Null
         }
     }
     Context 'Logic' {

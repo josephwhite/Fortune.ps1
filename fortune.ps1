@@ -573,6 +573,12 @@ function Show-FortunePercentageByFile {
     return
 }
 
+$isDotSourced = $MyInvocation.InvocationName -in '.', ''
+if ($isDotSourced) {
+    Write-Debug "Importing functions."
+    exit 0
+}
+
 if ($Help) {
     # Recreate script in temp path without PSScriptInfo to have Get-Help work.
     $help_path = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "fortune-help.ps1")
