@@ -114,7 +114,8 @@ jobs:
           Install-Module -Name powershell-yaml -RequiredVersion $PSYAML_VERSION -Force -Scope CurrentUser
 
           $req_filename = "requirements-${{ env.BUILD_UUID }}.psd1"
-          New-Item -Name $req_filename -ItemType "File" -Value "@{`n" | Out-Null
+          New-Item -Name $req_filename -ItemType "File" | Out-Null
+          Add-Content -Path $req_filename -Value "@{"
           Add-Content -Path $req_filename -Value "PSToml = '$PSTOML_VERSION'"
           Add-Content -Path $req_filename -Value "powershell-yaml = '$PSYAML_VERSION'"
           Add-Content -Path $req_filename -Value "}"
@@ -133,7 +134,8 @@ jobs:
           Install-Module -Name powershell-yaml -RequiredVersion $PSYAML_VERSION -Force -Scope CurrentUser
 
           $req_filename = "requirements-${{ env.BUILD_UUID }}.psd1"
-          New-Item -Name $req_filename -ItemType "File" -Value "@{`n" | Out-Null
+          New-Item -Name $req_filename -ItemType "File" | Out-Null
+          Add-Content -Path $req_filename -Value "@{"
           Add-Content -Path $req_filename -Value "PSToml = '$PSTOML_VERSION'"
           Add-Content -Path $req_filename -Value "powershell-yaml = '$PSYAML_VERSION'"
           Add-Content -Path $req_filename -Value "}"

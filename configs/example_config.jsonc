@@ -1,0 +1,15 @@
+// -*- mode: jsonc -*-
+{
+  "default": [
+    "C:\\foobar\\fortunes\\*"
+  ],
+  /*
+    Media specific
+  */
+  "TV": [
+    "C:\\foobar\\fortunes\\xfiles.txt",
+    "C:\\bazbar\\breakingbad.txt",
+    // Formerly Chuck's
+    "D:\\path\\simpsons.txt"
+  ]
+}

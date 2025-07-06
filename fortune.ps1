@@ -9,13 +9,16 @@
     .DESCRIPTION
     Fortune for PowerShell that includes flexible file selecting, config support, and various parameters from the original Fortune.
     .PARAMETER File
+    [System.String]
     Filepath of fortune file(s) to pool from when not using a group and config file. Wildcards are supported.
     Takes priority over Group flag.
     .PARAMETER Config
+    [System.String]
     Filepath of configuration file defining groups of Fortune files and their filepaths.
 
     Accepted configuration file formats:
     - JSON (JavaScript Object Notation)
+    - JSONC (JSON with Comments)
     - TOML (Tom's Obvious, Minimal Language)
     - YAML (Yet Another Markup Language / YAML Ain't Markup Language)
     - PSD1 (PowerShell data file)
@@ -67,37 +70,48 @@
         - 'C:\foobar\fortunes\breakingbad.txt'
     ```
     .PARAMETER Group
+    [System.String]
     Group of filepaths to pool fortunes from.
     Default value is "default"
     .PARAMETER Long
+    [System.Int32]
     Filter for fortunes that are longer than the given character length if present.
     Should be a positive integer.
     See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER Short
+    [System.Int32]
     Filter for fortunes that are shorter than the given character length if present.
     Should be a positive integer.
     See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER Length
+    [System.Int32]
     Filter for fortunes with the given character length if present.
     Takes priority over Long and Short flags.
     Should be a positive integer.
     See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER Equidistribution
+    [System.Management.Automation.SwitchParameter]
     Give each fortune file found an equal probability of having their fortune being printed.
     Replaces being relative to the entries of each file.
     .PARAMETER Match
+    [System.String]
     Filter and prints fortunes matching a given REGEX pattern.
     Each fortune will be separated by a single %.
     .PARAMETER Percentage
+    [System.Management.Automation.SwitchParameter]
     Prints an array of fortune filepaths, their percentages, and terminates if present.
     .PARAMETER Seed
+    [System.Int32]
     Sets seed for randomization.
     Will not affect Get-Random calls outside script.
     .PARAMETER Wait
+    [System.Management.Automation.SwitchParameter]
     Waits before exiting after printing single fortune.
     .PARAMETER Version
+    [System.Management.Automation.SwitchParameter]
     Prints version and terminates if present.
     .PARAMETER Help
+    [System.Management.Automation.SwitchParameter]
     Prints Full Get-Help output and terminates if present.
     .EXAMPLE
     fortune.ps1
@@ -168,14 +182,20 @@
 
     Blame
         - Using .NET's [System.Random]
-            - Usage of Seed parameter.
-            - Set seed WITHOUT affecting Get-Random Seed outside of the script.
-            - Get-Random doesn't support a flag for clearing set seeds.
-                - "You can't reset the seed to its default value."
+            - Usage of Seed parameter WITHOUT affecting Get-Random seed outside of the script
+            - Get-Random doesn't support a flag for clearing set seeds
+                - "You can't reset the seed to its default value"
                     - https://learn.microsoft.com/powershell/module/microsoft.powershell.utility/get-random
-        -  Creating a subcopy of the script in temp path.
-            - PSScriptInfo seems to cause issues for Get-Help.
+            - We have to use the .NET Framework 4.5 [System.Random] class and functions to stay compatible with Windows PowerShell
+        - Creating a subcopy of the script in temp path
+            - PSScriptInfo seems to cause issues for Get-Help
             - https://stackoverflow.com/q/71579241
+        - Converting PSCustomObject to Hashtable type for JSON configs
+            - General "want" to have the basetype of all imported configs to be more specific than System.Object
+            - Using this method to be compatible with PowerShell prior v7.3.0
+                - AsHashtable for ConvertFrom-Json was introduced in v7.3.0
+            - https://stackoverflow.com/a/32102005
+
 #>
 [CmdletBinding()]
 param(
@@ -255,10 +275,12 @@ class FortuneConfig {
                 $this.Path = $Path
             }
             "JSON" {
-                $cfg_buffer = Get-Content -Path $Path -Raw | ConvertFrom-Json
+                $cfg_buffer = Get-Content -Path $Path -Raw
+                # Strip comments to allow Windows PowerShell to use JSONC
+                $cfg_buffer = $cfg_buffer -replace '(?m)(?<=^([^"]|"[^"]*")*)//.*'
+                $cfg_buffer = $cfg_buffer -replace '(?ms)/\*.*?\*/'
+                $cfg_buffer = $cfg_buffer | ConvertFrom-Json
                 # Convert from PSCustomObject to Hashtable type
-                # Using this method to be compatible with PowerShell prior v7.3.0
-                # https://stackoverflow.com/a/32102005
                 $this.Data = @{}
                 $cfg_buffer | Get-Member -MemberType Properties | ForEach-Object {
                     $this.Data.Add($_.Name, $cfg_buffer.($_.Name))
@@ -278,6 +300,7 @@ class FortuneConfig {
                 $this.Path = $Path
             }
             default {
+                Write-Error -Message "FortuneConfig needs a valid type." -Category InvalidType
             }
         }
     }
@@ -287,11 +310,14 @@ class FortuneConfig {
     .SYNOPSIS
     Converts a Fortune file to an array of Fortunes.
     .PARAMETER FortuneFile
+    [System.String]
     Path of Fortune file.
     .PARAMETER Group
+    [System.String]
     Group if Fortune file was found through Group/Config.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
+    Array of Fortunes.
 #>
 function Get-FortuneFromFile {
     param(
@@ -324,13 +350,16 @@ function Get-FortuneFromFile {
     .SYNOPSIS
     Converts a group of Fortune files to an array of Fortunes.
     .PARAMETER Tag
+    [System.String]
     Group of Fortune files.
     .PARAMETER ConfigObj
+    [System.Collections.Hashtable]
     Object representation of Config file to pull Tag from.
     Previously used System.Object type to support multiple config formats and how they are imported to PowerShell.
     System.Object is the BaseType of Hashtable, OrderedDictionary, and PSCustomObject.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
+    Array of Fortunes.
 #>
 function Get-FortuneFromFileCollection {
     param(
@@ -350,14 +379,17 @@ function Get-FortuneFromFileCollection {
     .SYNOPSIS
     Calculate the time needed to read a fortune in seconds.
     .PARAMETER Length
+    [System.Int32]
     Length of fortune.
     Should be a positive integer.
     See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER Min
+    [System.Int32]
     Minimum time to wait in seconds.
     Should be a positive integer.
     See: https://proofwiki.org/wiki/Definition:Positive/Integer
     .PARAMETER LPS
+    [System.Int32]
     Letters Per Second.
     Should be a strictly positive integer.
     See: https://proofwiki.org/wiki/Definition:Strictly_Positive/Integer
@@ -390,15 +422,20 @@ function Get-FortuneReadoutTime {
     .SYNOPSIS
     Filter an array of Fortunes by character length.
     .PARAMETER Fortunes
+    [System.Management.Automation.PSCustomObject[]]
     Array of Fortunes to filter.
     .PARAMETER Long
+    [System.Int32]
     Filter for fortunes that are longer than the given character length if present.
     .PARAMETER Short
+    [System.Int32]
     Filter for fortunes that are shorter than the given character length if present.
     .PARAMETER Length
+    [System.Int32]
     Filter for fortunes with the given character length if present.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
+    Filtered array of Fortunes.
 #>
 function Select-FortunesByLength {
     param(
@@ -434,10 +471,13 @@ function Select-FortunesByLength {
     .SYNOPSIS
     Filter an array of Fortunes by character matching.
     .PARAMETER Fortunes
+    [System.Management.Automation.PSCustomObject[]]
     Array of Fortunes to filter.
     .PARAMETER Pattern
+    [System.String]
     Filter fortunes matching a given REGEX pattern.
     .PARAMETER Exclude
+    [System.String]
     REGEX pattern to filter out from array.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
@@ -470,8 +510,10 @@ function Select-FortunesByPattern {
     .SYNOPSIS
     Filter an array of Fortunes by Path.
     .PARAMETER Fortunes
+    [System.Management.Automation.PSCustomObject[]]
     Array of Fortunes to filter.
     .PARAMETER Path
+    [System.String]
     Filter fortunes with a given Path value.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
@@ -494,8 +536,10 @@ function Select-FortunesByPath {
     .SYNOPSIS
     Output a random Fortune from an array.
     .PARAMETER Fortunes
+    [System.Management.Automation.PSCustomObject[]]
     Array of Fortunes.
     .PARAMETER RNG
+    [System.Random]
     Random Number Generator object.
     Optimally should be used only in cases where a seeded Get-Random call is wanted.
     .EXAMPLE
@@ -529,6 +573,7 @@ function Show-Fortune {
     .SYNOPSIS
     Output each Fortune in an array, delimited by "%".
     .PARAMETER Fortunes
+    [System.Management.Automation.PSCustomObject[]]
     Array of Fortunes.
     .EXAMPLE
     $fortunes_output = Show-PossibleFortuneList -Fortunes $fortunes
@@ -550,8 +595,10 @@ function Show-PossibleFortuneList {
     .SYNOPSIS
     Output the unique Fortune Filepaths and the chance a Fortune would be picked from each file.
     .PARAMETER Fortunes
+    [System.Management.Automation.PSCustomObject[]]
     Array of Fortunes.
     .PARAMETER Equal
+    [System.Boolean]
     Set the chance for each file to be equal.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
@@ -583,7 +630,7 @@ if ($Help) {
     # Recreate script in temp path without PSScriptInfo to have Get-Help work.
     $help_path = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "fortune-help.ps1")
     Get-Content -Path $PSCommandPath | Select-Object -Skip 5 | Set-Content -Path $help_path
-    Get-Help -Name $help_path
+    Get-Help -Name $help_path -Full
     exit 0
 }
 
@@ -606,9 +653,6 @@ if ($Length) {
 }
 # - Set Seed if present for Random Number Generator object
 if ($PSBoundParameters.ContainsKey('Seed')) {
-    # Not only do we get to use the .NET [System.Random] class,
-    # but we also have to use the .NET Framework 4.5 functions
-    # to stay compatible with Windows PowerShell.
     $rng_object = [System.Random]::new($Seed)
     $fortune_vmes = "Fortune Seed: $Seed"
     Write-Verbose -Message $fortune_vmes
@@ -641,7 +685,7 @@ if ($Group) {
         { $_ -in ".YAML", ".YML" } {
             $cfg = ([FortuneConfig]::new($Config, "YAML")).Data
         }
-        { $_ -in ".JSON" } {
+        { $_ -in ".JSON", ".JSONC" } {
             $cfg = ([FortuneConfig]::new($Config, "JSON")).Data
         }
         { $_ -in ".PSD1" } {

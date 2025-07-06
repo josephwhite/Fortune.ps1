@@ -17,7 +17,7 @@ l0l -- lma0 even.
     }
 }
 
-Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
+Describe 'FortuneConfig Class' -Tag "WindowsOnly", "MacosOnly" {
     BeforeEach {
         . $PSCommandPath.Replace('.Tests.ps1', '.ps1') -Version | Out-Null
     }
@@ -39,6 +39,12 @@ Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
         $cfg = $cfg_buffer.Data
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
+    It 'Creates a Hashtable (JSONC)' {
+        $path_json = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.jsonc")
+        $cfg_buffer = [FortuneConfig]::new($path_json, "JSON")
+        $cfg = $cfg_buffer.Data
+        $cfg | Should -BeOfType "System.Collections.Hashtable"
+    }
     It 'Creates a Hashtable (PSD1)' {
         $path_psd1 = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.psd1")
         $cfg_buffer = [FortuneConfig]::new($path_psd1, "PSD1")
@@ -46,9 +52,16 @@ Describe 'Config Class' -Tag "WindowsOnly", "MacosOnly" {
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
     It 'Needs a valid type' {
-        $cfg_buffer = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml"), "TXT") 2>&1
-        $cfg = $cfg_buffer.Data
-        $cfg | Should -BeNullOrEmpty
+        $cfg_buffer_txt = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml"), "TXT") 2>&1
+        $cfg_txt = $cfg_buffer_txt.Data
+        $cfg_txt | Should -BeNullOrEmpty
+        { [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")) } | Should -Throw
+    }
+    It 'Needs a path provided' {
+        { [FortuneConfig]::new("TOML") } | Should -Throw
+        { [FortuneConfig]::new("YAML") } | Should -Throw
+        { [FortuneConfig]::new("JSON") } | Should -Throw
+        { [FortuneConfig]::new("PSD1") } | Should -Throw
     }
 }
 
@@ -393,7 +406,7 @@ Describe 'Fortune.ps1' -Tag "WindowsOnly", "MacosOnly", "LinuxOnly" {
         It 'Outputs Get-Help' {
             $help_path = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), "fortune-help.ps1")
             Get-Content -Path $script_path | Select-Object -Skip 5 | Set-Content -Path $help_path
-            $script_gethelp_output = (Get-Help -Name $help_path 2>&1 | Out-String)
+            $script_gethelp_output = (Get-Help -Name $help_path -Full 2>&1 | Out-String)
             $script_help_param_output = & $script_path -Help 2>&1 | Out-String
             $script_help_param_output | Should -Be $script_gethelp_output
         }
