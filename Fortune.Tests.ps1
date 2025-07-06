@@ -52,16 +52,26 @@ Describe 'FortuneConfig Class' -Tag "WindowsOnly", "MacosOnly" {
         $cfg | Should -BeOfType "System.Collections.Hashtable"
     }
     It 'Needs a valid type' {
-        $cfg_buffer_txt = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml"), "TXT") 2>&1
+        $path_toml = [System.IO.Path]::Combine($PSScriptRoot, "configs", "example_config.toml")
+        $toml_item = Get-Item -Path $path_toml
+        { [FortuneConfig]::new($toml_item, "TXT") 2>&1 } | Should -Not -Throw
+        $cfg_buffer_txt = [FortuneConfig]::new($toml_path, "TXT") 2>&1
         $cfg_txt = $cfg_buffer_txt.Data
         $cfg_txt | Should -BeNullOrEmpty
-        { [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")) 2>&1 } | Should -Throw
+        { [FortuneConfig]::new($toml_item) 2>&1 } | Should -Not -Throw
+        $cfg_buffer_null = [FortuneConfig]::new($toml_path) 2>&1
+        $cfg_null = $cfg_buffer_null.Data
+        $cfg_null | Should -BeNullOrEmpty
     }
     It 'Needs a path provided' {
-        { [FortuneConfig]::new("TOML") 2>&1 } | Should -Throw
-        { [FortuneConfig]::new("YAML") 2>&1 } | Should -Throw
-        { [FortuneConfig]::new("JSON") 2>&1 } | Should -Throw
-        { [FortuneConfig]::new("PSD1") 2>&1 } | Should -Throw
+        { [FortuneConfig]::new("TOML") 2>&1 } | Should -Not -Throw
+        [FortuneConfig]::new("TOML").Data 2>&1 | Should -BeNullOrEmpty
+        { [FortuneConfig]::new("YAML") 2>&1 } | Should -Not -Throw
+        [FortuneConfig]::new("YAML").Data 2>&1 | Should -BeNullOrEmpty
+        { [FortuneConfig]::new("JSON") 2>&1 } | Should -Not -Throw
+        [FortuneConfig]::new("JSON").Data 2>&1 | Should -BeNullOrEmpty
+        { [FortuneConfig]::new("PSD1") 2>&1 } | Should -Not -Throw
+        [FortuneConfig]::new("PSD1").Data 2>&1 | Should -BeNullOrEmpty
     }
 }
 

@@ -261,6 +261,15 @@ class FortuneConfig {
     [string]$Type
     [System.Collections.Hashtable]$Data
 
+    FortuneConfig() {
+        Write-Error -Message "FortuneConfig needs a path and valid type." -Category InvalidType
+    }
+    FortuneConfig([System.IO.FileInfo]$Path) {
+        Write-Error -Message "FortuneConfig needs a valid type." -Category InvalidType
+    }
+    FortuneConfig([string]$Type) {
+        Write-Error -Message "FortuneConfig needs a path." -Category InvalidType
+    }
     FortuneConfig([System.IO.FileInfo]$Path, [string]$Type) {
         switch ($Type) {
             "TOML" {
