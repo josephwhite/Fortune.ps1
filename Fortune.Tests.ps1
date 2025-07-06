@@ -55,13 +55,13 @@ Describe 'FortuneConfig Class' -Tag "WindowsOnly", "MacosOnly" {
         $cfg_buffer_txt = [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml"), "TXT") 2>&1
         $cfg_txt = $cfg_buffer_txt.Data
         $cfg_txt | Should -BeNullOrEmpty
-        { [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")) } | Should -Throw
+        { [FortuneConfig]::new([System.IO.Path]::Combine($PSScriptRoot, "example_config.toml")) 2>&1 } | Should -Throw
     }
     It 'Needs a path provided' {
-        { [FortuneConfig]::new("TOML") } | Should -Throw
-        { [FortuneConfig]::new("YAML") } | Should -Throw
-        { [FortuneConfig]::new("JSON") } | Should -Throw
-        { [FortuneConfig]::new("PSD1") } | Should -Throw
+        { [FortuneConfig]::new("TOML") 2>&1 } | Should -Throw
+        { [FortuneConfig]::new("YAML") 2>&1 } | Should -Throw
+        { [FortuneConfig]::new("JSON") 2>&1 } | Should -Throw
+        { [FortuneConfig]::new("PSD1") 2>&1 } | Should -Throw
     }
 }
 
