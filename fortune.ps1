@@ -262,13 +262,13 @@ class FortuneConfig {
     [System.Collections.Hashtable]$Data
 
     FortuneConfig() {
-        Write-Error -Message "FortuneConfig needs a path and valid type." -Category InvalidType
+        throw "FortuneConfig needs a path and valid type."
     }
     FortuneConfig([System.IO.FileInfo]$Path) {
-        Write-Error -Message "FortuneConfig needs a valid type." -Category InvalidType
+        throw "FortuneConfig needs a valid type."
     }
     FortuneConfig([string]$Type) {
-        Write-Error -Message "FortuneConfig needs a path." -Category InvalidType
+        throw "FortuneConfig needs a path."
     }
     FortuneConfig([System.IO.FileInfo]$Path, [string]$Type) {
         switch ($Type) {
@@ -309,7 +309,7 @@ class FortuneConfig {
                 $this.Path = $Path
             }
             default {
-                Write-Error -Message "FortuneConfig needs a valid type." -Category InvalidType
+                throw "FortuneConfig needs a valid type."
             }
         }
     }
