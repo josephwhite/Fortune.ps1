@@ -629,8 +629,8 @@ function Show-FortunePercentageByFile {
     return
 }
 
-$isDotSourced = $MyInvocation.InvocationName -in '.', ''
-if ($isDotSourced) {
+# Dot sourced.
+if ($MyInvocation.InvocationName -in '.', '') {
     Write-Debug "Importing functions."
     exit 0
 }
