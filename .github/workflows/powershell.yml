@@ -41,7 +41,7 @@ jobs:
     #   pestertag = Pester Tag for platform specific testing (https://pester.dev/docs/usage/tags)
     #   shell     = PowerShell executable (Windows PowerShell vs Powershell v6+)
     strategy:
-      max-parallel: 3
+      max-parallel: 6
       matrix:
           info:
             - platform: "windows-latest"
