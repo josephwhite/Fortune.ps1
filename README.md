@@ -11,7 +11,7 @@ A PowerShell implementation of the [unix `fortune` program](https://www.wikipedi
 - Optional config based quote pooling.
 	-  Directory independent.
 	-  Arrays of filepaths.
-	-  Supports JSON, PSD1, TOML, and YAML.
+	-  Supports JSON/JSONC, PSD1, TOML, and YAML.
 - Length and Pattern parameters.
 - Compatible with PowerShell v5.1+.
 - Comment-based help for `Get-Help` parsing.
