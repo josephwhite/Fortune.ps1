@@ -3,8 +3,18 @@
 A PowerShell implementation of the [unix `fortune` program](https://www.wikipedia.org/wiki/Fortune_(Unix)). This project aims to implement many features from the original program with new ideas for more flexibility. Flags `-a` and `-o` from the original have been replaced by an approach using arrays of filepaths from config files. This allows not only more specific groupings to seperate fortune files, but also allows fortune files to be independent from a single directory.
 
 ### Teapot Status
+![GitHub Release](https://img.shields.io/github/v/release/josephwhite/Fortune.ps1)
+
 [![PSScriptAnalyzer](https://github.com/josephwhite/Fortune.ps1/actions/workflows/powershell.yml/badge.svg)](https://github.com/josephwhite/Fortune.ps1/actions/workflows/powershell.yml)
 ![Static Badge](https://img.shields.io/badge/LICENSE-AGPL_3.0_only-blue)
+
+## Installation
+
+### Getting Started
+
+1. Download the [`fortune.ps1`](./fortune.ps1) script and the default config [`fortune_config.psd1`](./fortune_config.psd1).
+2. If you don't have any pre-existing fortune files, also download the [fortunes](./fortunes/) directory.
+3. If you do have pre-existing fortune files, modify the default config to point those files in under the default case. See the [example](./configs/example_config.psd1) for reference.
 
 ## Features
 

@@ -1,5 +1,5 @@
 <#PSScriptInfo
-.VERSION 1.0.6
+.VERSION 1.0.7
 .GUID 0e2718fa-6a3f-426d-9378-beed592e39ff
 .AUTHOR isthisfieldimportant
 #>
@@ -160,7 +160,7 @@
     fortune.ps1 -Help
     fortune.ps1 -h
     .EXAMPLE
-    Verbose messaging is available.
+    Enable verbose messaging.
     fortune.ps1 -Verbose
     .NOTES
     Dependencies
@@ -490,6 +490,7 @@ function Select-FortunesByLength {
     REGEX pattern to filter out from array.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
+    Filtered array of Fortunes.
 #>
 function Select-FortunesByPattern {
     param(
@@ -526,6 +527,7 @@ function Select-FortunesByPattern {
     Filter fortunes with a given Path value.
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
+    Filtered array of Fortunes.
 #>
 function Select-FortunesByPath {
     param(
@@ -558,6 +560,7 @@ function Select-FortunesByPath {
     $fortune_output = Show-Fortune -Fortunes $fortunes -RNG $pseudo_rand
     .OUTPUTS
     [System.String]
+    Fortune.
 #>
 function Show-Fortune {
     param(
@@ -588,6 +591,7 @@ function Show-Fortune {
     $fortunes_output = Show-PossibleFortuneList -Fortunes $fortunes
     .OUTPUTS
     [System.String[]]
+    Array of Fortunes, delimited by "%".
 #>
 function Show-PossibleFortuneList {
     param(
@@ -609,8 +613,13 @@ function Show-PossibleFortuneList {
     .PARAMETER Equal
     [System.Boolean]
     Set the chance for each file to be equal.
+    .EXAMPLE
+    $fortunes_output = Show-FortunePercentageByFile -Fortunes $fortunes
+    .EXAMPLE
+    $fortunes_output = Show-FortunePercentageByFile -Fortunes $fortunes -Equal $true
     .OUTPUTS
     [System.Management.Automation.PSCustomObject[]]
+    Array of filepaths and their respective chance (in perentage out of 100) of having a fortune selected.
 #>
 function Show-FortunePercentageByFile {
     param(
@@ -644,7 +653,7 @@ if ($Help) {
 }
 
 if ($Version) {
-    $program_version = ([version]::new(1, 0, 6)).toString()
+    $program_version = ([version]::new(1, 0, 7)).toString()
     Write-Output $program_version
     exit 0
 }
