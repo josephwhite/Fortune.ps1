@@ -173,7 +173,7 @@ jobs:
       # Upload the Pester results.
       - name: Upload Pester reports
         if: ${{ success() }}
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: pester-report-${{ matrix.info.shell }}-${{ matrix.info.platform }}-${{ env.BUILD_UUID }}
           # Includes tests and code coverage.
